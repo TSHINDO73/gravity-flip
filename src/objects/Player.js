@@ -1,5 +1,5 @@
 ﻿import { GRAVITY, RUN_SPEED, MAX_FALL_SPEED, JUMP_CUT, SCALE } from '../config.js';
-import { IMG, FRAMES, CHAR_SRC } from '../assetKeys.js';
+import { IMG, FRAMES, CHAR_SRC, SFX } from '../assetKeys.js';
 import { shiftBodyToFeet } from './gravityBody.js';
 import { createFlipState, canFlip, applyFlip, onLand } from '../logic/flipRules.js';
 import { createJumpState, markGrounded, markPressed, shouldJump, consumeJump, jumpVelocityY } from '../logic/jumpRules.js';
@@ -92,6 +92,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (shouldJump(this.jumpState, time, onGround)) {
       this.setVelocityY(jumpVelocityY(dir));
       this.jumpState = consumeJump(this.jumpState);
+      this.scene.sound.play(SFX.jump);
     }
     // 可変ジャンプ: 離したとき、足元から離れる向きに動いていれば縮める
     const jumpReleased = Phaser.Input.Keyboard.JustUp(keys.jumpZ) || Phaser.Input.Keyboard.JustUp(keys.jumpSpace);
@@ -105,6 +106,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.flipState = applyFlip(this.flipState, onGround);
       this.setVelocityY(0);
       this.applyGravityVisuals();
+      this.scene.sound.play(SFX.flip);
       this.scene.events.emit('gravity-flipped', this.gravityDir);
     }
 

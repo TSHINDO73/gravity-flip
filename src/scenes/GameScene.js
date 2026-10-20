@@ -1,10 +1,11 @@
 ﻿import { GAME_W, GAME_H, TILE, SCALE } from '../config.js';
-import { IMG, FRAMES } from '../assetKeys.js';
+import { IMG, FRAMES, SFX } from '../assetKeys.js';
 import { LEVELS } from '../levels/levels.js';
 import { parseLevel } from '../levels/parseLevel.js';
 import { Player } from '../objects/Player.js';
 import { Enemy } from '../objects/Enemy.js';
 import { jumpVelocityY } from '../logic/jumpRules.js';
+import { formatTime } from '../logic/format.js';
 import { isOutOfBounds, isStomp } from '../logic/combatRules.js';
 
 const SPIKE_HIT = TILE * 0.6;
@@ -23,6 +24,7 @@ export class GameScene extends Phaser.Scene {
     this.coinsAtStageStart = coins;
     this.elapsedAtStageStart = elapsedMs;
     this.isDead = false;
+    this.reachedGoal = false;
   }
 
   tileCenter(cell) {
@@ -92,6 +94,31 @@ export class GameScene extends Phaser.Scene {
       flag.setTint(0xffe040);
     });
 
+    // コイン
+    this.coinGroup = this.physics.add.staticGroup();
+    for (const cell of this.level.coins) {
+      const p = this.tileCenter(cell);
+      this.coinGroup.create(p.x, p.y, IMG.tiles, FRAMES.coin).setScale(SCALE).refreshBody();
+    }
+    this.physics.add.overlap(this.player, this.coinGroup, (pl, coin) => {
+      if (this.isDead || !coin.active) return;
+      coin.destroy();
+      this.coins++;
+      this.sound.play(SFX.coin);
+    });
+
+    // ゴール
+    const gp = this.tileCenter(this.level.goal);
+    this.goal = this.physics.add.staticImage(gp.x, gp.y, IMG.tiles, FRAMES.goal).setScale(SCALE).refreshBody();
+    this.physics.add.overlap(this.player, this.goal, () => this.onGoal());
+
+    // HUD
+    this.hud = this.add
+      .text(12, 10, '', { fontFamily: 'sans-serif', fontSize: '22px', color: '#ffffff', stroke: '#000000', strokeThickness: 4 })
+      .setScrollFactor(0)
+      .setDepth(100);
+    this.updateHud();
+
     // 歩く敵
     this.enemies = this.add.group();
     for (const cell of this.level.enemies) {
@@ -148,8 +175,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   killPlayer() {
-    if (this.isDead) return;
+    if (this.isDead || this.reachedGoal) return;
     this.isDead = true;
+    this.sound.play(SFX.die);
     const pl = this.player;
     pl.setVelocity(0, 0);
     pl.body.setGravityY(0);
@@ -163,6 +191,23 @@ export class GameScene extends Phaser.Scene {
     this.placePlayerAt(this.respawnPoint);
     this.events.emit('gravity-flipped', 1);
     this.isDead = false;
+  }
+
+  onGoal() {
+    if (this.isDead || this.reachedGoal) return;
+    this.reachedGoal = true;
+    this.sound.play(SFX.clear);
+    this.player.setVelocity(0, 0);
+    this.player.body.enable = false;
+    const { stage, coins, elapsedMs } = this;
+    this.time.delayedCall(400, () => {
+      if (stage < LEVELS.length - 1) this.scene.restart({ stage: stage + 1, coins, elapsedMs });
+      else this.scene.start('ClearScene', { coins, elapsedMs });
+    });
+  }
+
+  updateHud() {
+    this.hud.setText(`ステージ ${this.stage + 1}/3　コイン ${this.coins}　タイム ${formatTime(this.elapsedMs)}`);
   }
 
   restartStage() {
@@ -180,7 +225,9 @@ export class GameScene extends Phaser.Scene {
       e.update((c, r) => this.isSolidAt(c, r));
       if (!e.dying && isOutOfBounds(e.y, levelH, TILE)) e.destroy();
     }
-    if (this.isDead) return;
+    if (!this.isDead && !this.reachedGoal) this.elapsedMs += delta;
+    this.updateHud();
+    if (this.isDead || this.reachedGoal) return;
     this.player.update(time, delta);
     if (isOutOfBounds(this.player.y, this.level.height * TILE, TILE)) this.killPlayer();
   }

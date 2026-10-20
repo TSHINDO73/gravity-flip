@@ -2,6 +2,7 @@
 import { BootScene } from './scenes/BootScene.js';
 import { TitleScene } from './scenes/TitleScene.js';
 import { GameScene } from './scenes/GameScene.js';
+import { ClearScene } from './scenes/ClearScene.js';
 
 const params = new URLSearchParams(window.location.search);
 
@@ -18,6 +19,6 @@ new Phaser.Game({
       debug: params.get('debug') === '1',
     },
   },
-  scene: [BootScene, TitleScene, GameScene],
+  scene: [BootScene, TitleScene, GameScene, ClearScene],
 });
 

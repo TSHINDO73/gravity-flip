@@ -1,4 +1,4 @@
-﻿import { IMG, TILE_SRC, CHAR_SRC } from '../assetKeys.js';
+﻿import { IMG, TILE_SRC, CHAR_SRC, SFX } from '../assetKeys.js';
 import { LEVELS } from '../levels/levels.js';
 
 export class BootScene extends Phaser.Scene {
@@ -12,6 +12,7 @@ export class BootScene extends Phaser.Scene {
     });
     this.load.spritesheet(IMG.tiles, 'assets/tiles.png', { frameWidth: TILE_SRC, frameHeight: TILE_SRC });
     this.load.spritesheet(IMG.chars, 'assets/characters.png', { frameWidth: CHAR_SRC, frameHeight: CHAR_SRC });
+    for (const name of Object.keys(SFX)) this.load.audio(SFX[name], 'assets/sfx/' + name + '.ogg');
   }
 
   create() {
