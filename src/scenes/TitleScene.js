@@ -15,6 +15,11 @@ export class TitleScene extends Phaser.Scene {
     });
     const start = this.add.text(GAME_W / 2, 450, 'Zキーでスタート', { ...STYLE, fontSize: '32px' }).setOrigin(0.5);
     this.tweens.add({ targets: start, alpha: 0.3, duration: 700, yoyo: true, repeat: -1 });
-    this.input.keyboard.once('keydown-Z', () => this.scene.start('GameScene', { stage: 0 }));
+    let done = false;
+    this.input.keyboard.on('keydown-Z', (e) => {
+      if (e.repeat || done) return;
+      done = true;
+      this.scene.start('GameScene', { stage: 0 });
+    });
   }
 }
