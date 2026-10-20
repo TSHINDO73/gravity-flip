@@ -1,0 +1,13 @@
+﻿export const GAME_W = 960;
+export const GAME_H = 540;
+export const TILE = 36;
+export const SCALE = 2;
+export const MAX_ROWS = 15;
+export const GRAVITY = 1400;
+export const RUN_SPEED = 220;
+export const JUMP_VELOCITY = 560;
+export const JUMP_CUT = 0.45;
+export const MAX_FALL_SPEED = 900;
+export const COYOTE_MS = 100;
+export const BUFFER_MS = 100;
+export const ENEMY_SPEED = 60;
