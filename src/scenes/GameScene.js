@@ -3,7 +3,9 @@ import { IMG, FRAMES } from '../assetKeys.js';
 import { LEVELS } from '../levels/levels.js';
 import { parseLevel } from '../levels/parseLevel.js';
 import { Player } from '../objects/Player.js';
-import { isOutOfBounds } from '../logic/combatRules.js';
+import { Enemy } from '../objects/Enemy.js';
+import { jumpVelocityY } from '../logic/jumpRules.js';
+import { isOutOfBounds, isStomp } from '../logic/combatRules.js';
 
 const SPIKE_HIT = TILE * 0.6;
 const DEATH_BLINK_MS = 500;
@@ -90,6 +92,18 @@ export class GameScene extends Phaser.Scene {
       flag.setTint(0xffe040);
     });
 
+    // 歩く敵
+    this.enemies = this.add.group();
+    for (const cell of this.level.enemies) {
+      const p = this.tileCenter(cell);
+      this.enemies.add(new Enemy(this, p.x, p.y + TILE / 2));
+    }
+    this.physics.add.collider(this.enemies, this.solidLayer);
+    this.physics.add.overlap(this.player, this.enemies, (pl, enemy) => this.onTouchEnemy(enemy));
+    this.events.on('gravity-flipped', (dir) => {
+      this.enemies.getChildren().forEach((e) => e.setGravityDir(dir));
+    });
+
     this.rKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
 
     const cam = this.cameras.main;
@@ -107,6 +121,28 @@ export class GameScene extends Phaser.Scene {
     this.player.body.enable = true;
     this.player.setAlpha(1);
     this.player.respawn(c.x, c.y + TILE / 2);
+  }
+
+  isSolidAt(col, row) {
+    if (col < 0 || row < 0 || row >= this.level.height || col >= this.level.width) return false;
+    return this.level.solid[row][col];
+  }
+
+  onTouchEnemy(enemy) {
+    if (this.isDead || enemy.dying) return;
+    const pl = this.player;
+    const stomp = isStomp({
+      playerVy: pl.body.velocity.y,
+      gravity: pl.gravityDir,
+      playerFeetY: pl.feetY,
+      enemyCenterY: enemy.y,
+    });
+    if (stomp) {
+      enemy.stomp();
+      pl.setVelocityY(jumpVelocityY(pl.gravityDir) * 0.6);
+    } else {
+      this.killPlayer();
+    }
   }
 
   killPlayer() {
@@ -139,6 +175,11 @@ export class GameScene extends Phaser.Scene {
     }
     if (this.isDead) return;
     this.player.update(time, delta);
+    const levelH = this.level.height * TILE;
+    for (const e of this.enemies.getChildren().slice()) {
+      e.update((c, r) => this.isSolidAt(c, r));
+      if (!e.dying && isOutOfBounds(e.y, levelH, TILE)) e.destroy();
+    }
     if (isOutOfBounds(this.player.y, this.level.height * TILE, TILE)) this.killPlayer();
   }
 }

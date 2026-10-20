@@ -1,5 +1,6 @@
 ﻿import { GRAVITY, RUN_SPEED, MAX_FALL_SPEED, JUMP_CUT, SCALE } from '../config.js';
 import { IMG, FRAMES, CHAR_SRC } from '../assetKeys.js';
+import { shiftBodyToFeet } from './gravityBody.js';
 import { createFlipState, canFlip, applyFlip, onLand } from '../logic/flipRules.js';
 import { createJumpState, markGrounded, markPressed, shouldJump, consumeJump, jumpVelocityY } from '../logic/jumpRules.js';
 
@@ -121,11 +122,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  // 体のオフセットを足元側へ移し替える。体の位置が動かないよう画像側を補正する。
+  // 体のオフセットを足元側へ移し替える。
   applyGravityVisuals() {
-    const oldOff = this.body.offset.y;
-    const newOff = this.gravityDir === 1 ? OFF_Y_DOWN : OFF_Y_UP;
-    this.body.setOffset(BODY_OFF_X, newOff);
-    this.y -= (newOff - oldOff) * SCALE;
+    shiftBodyToFeet(this, this.gravityDir, BODY_OFF_X, OFF_Y_DOWN, OFF_Y_UP);
   }
 }
