@@ -100,9 +100,11 @@ export class GameScene extends Phaser.Scene {
     }
     this.physics.add.collider(this.enemies, this.solidLayer);
     this.physics.add.overlap(this.player, this.enemies, (pl, enemy) => this.onTouchEnemy(enemy));
-    this.events.on('gravity-flipped', (dir) => {
+    const onFlip = (dir) => {
       this.enemies.getChildren().forEach((e) => e.setGravityDir(dir));
-    });
+    };
+    this.events.on('gravity-flipped', onFlip);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.events.off('gravity-flipped', onFlip));
 
     this.rKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
 
@@ -135,7 +137,7 @@ export class GameScene extends Phaser.Scene {
       playerVy: pl.body.velocity.y,
       gravity: pl.gravityDir,
       playerFeetY: pl.feetY,
-      enemyCenterY: enemy.y,
+      enemyCenterY: enemy.body.center.y,
     });
     if (stomp) {
       enemy.stomp();
@@ -173,13 +175,13 @@ export class GameScene extends Phaser.Scene {
       this.restartStage();
       return;
     }
-    if (this.isDead) return;
-    this.player.update(time, delta);
     const levelH = this.level.height * TILE;
     for (const e of this.enemies.getChildren().slice()) {
       e.update((c, r) => this.isSolidAt(c, r));
       if (!e.dying && isOutOfBounds(e.y, levelH, TILE)) e.destroy();
     }
+    if (this.isDead) return;
+    this.player.update(time, delta);
     if (isOutOfBounds(this.player.y, this.level.height * TILE, TILE)) this.killPlayer();
   }
 }
