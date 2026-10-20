@@ -6,6 +6,7 @@ import { Player } from '../objects/Player.js';
 import { Enemy } from '../objects/Enemy.js';
 import { jumpVelocityY } from '../logic/jumpRules.js';
 import { formatTime } from '../logic/format.js';
+import { playSfx } from '../objects/sfx.js';
 import { isOutOfBounds, isStomp } from '../logic/combatRules.js';
 
 const SPIKE_HIT = TILE * 0.6;
@@ -22,7 +23,6 @@ export class GameScene extends Phaser.Scene {
     this.coins = coins;
     this.elapsedMs = elapsedMs;
     this.coinsAtStageStart = coins;
-    this.elapsedAtStageStart = elapsedMs;
     this.isDead = false;
     this.reachedGoal = false;
   }
@@ -58,7 +58,15 @@ export class GameScene extends Phaser.Scene {
     this.solidLayer = this.physics.add.staticGroup();
     for (const cell of this.level.blocks) {
       const p = this.tileCenter(cell);
-      this.solidLayer.create(p.x, p.y, IMG.tiles, FRAMES.block).setScale(SCALE).refreshBody();
+      const block = this.solidLayer.create(p.x, p.y, IMG.tiles, FRAMES.block).setScale(SCALE).refreshBody();
+      // 隣もブロックの面(壁の内側の継ぎ目)は当たり判定を切る。壁の途中に「着地」して引っかかるのを防ぐ
+      const { col, row } = cell;
+      const cc = block.body.checkCollision;
+      cc.up = !this.isSolidAt(col, row - 1);
+      cc.down = !this.isSolidAt(col, row + 1);
+      cc.left = !this.isSolidAt(col - 1, row);
+      cc.right = !this.isSolidAt(col + 1, row);
+      cc.none = !(cc.up || cc.down || cc.left || cc.right);
     }
 
     this.respawnPoint = this.level.start;
@@ -104,7 +112,7 @@ export class GameScene extends Phaser.Scene {
       if (this.isDead || !coin.active) return;
       coin.destroy();
       this.coins++;
-      this.sound.play(SFX.coin);
+      playSfx(this, SFX.coin);
     });
 
     // ゴール
@@ -177,13 +185,13 @@ export class GameScene extends Phaser.Scene {
   killPlayer() {
     if (this.isDead || this.reachedGoal) return;
     this.isDead = true;
-    this.sound.play(SFX.die);
     const pl = this.player;
     pl.setVelocity(0, 0);
     pl.body.setGravityY(0);
     pl.body.enable = false;
     this.tweens.add({ targets: pl, alpha: 0.2, duration: DEATH_BLINK_MS / 8, yoyo: true, repeat: 3 });
     this.time.delayedCall(DEATH_BLINK_MS, () => this.respawnPlayer());
+    playSfx(this, SFX.die);
   }
 
   respawnPlayer() {
@@ -196,7 +204,6 @@ export class GameScene extends Phaser.Scene {
   onGoal() {
     if (this.isDead || this.reachedGoal) return;
     this.reachedGoal = true;
-    this.sound.play(SFX.clear);
     this.player.setVelocity(0, 0);
     this.player.body.enable = false;
     const { stage, coins, elapsedMs } = this;
@@ -204,14 +211,16 @@ export class GameScene extends Phaser.Scene {
       if (stage < LEVELS.length - 1) this.scene.restart({ stage: stage + 1, coins, elapsedMs });
       else this.scene.start('ClearScene', { coins, elapsedMs });
     });
+    playSfx(this, SFX.clear);
   }
 
   updateHud() {
-    this.hud.setText(`ステージ ${this.stage + 1}/3　コイン ${this.coins}　タイム ${formatTime(this.elapsedMs)}`);
+    this.hud.setText(`ステージ ${this.stage + 1}/${LEVELS.length}　コイン ${this.coins}　タイム ${formatTime(this.elapsedMs)}`);
   }
 
+  // やり直し: コインはステージ開始時に戻すが、タイムは戻さない(経過時間をそのまま引き継ぐ)
   restartStage() {
-    this.scene.restart({ stage: this.stage, coins: this.coinsAtStageStart, elapsedMs: this.elapsedAtStageStart });
+    this.scene.restart({ stage: this.stage, coins: this.coinsAtStageStart, elapsedMs: this.elapsedMs });
   }
 
   update(time, delta) {

@@ -1,8 +1,9 @@
 ﻿import { GRAVITY, RUN_SPEED, MAX_FALL_SPEED, JUMP_CUT, SCALE } from '../config.js';
 import { IMG, FRAMES, CHAR_SRC, SFX } from '../assetKeys.js';
 import { shiftBodyToFeet } from './gravityBody.js';
+import { playSfx } from './sfx.js';
 import { createFlipState, canFlip, applyFlip, onLand } from '../logic/flipRules.js';
-import { createJumpState, markGrounded, markPressed, shouldJump, consumeJump, jumpVelocityY } from '../logic/jumpRules.js';
+import { createJumpState, markGrounded, markPressed, shouldJump, consumeJump, onFlip, jumpVelocityY } from '../logic/jumpRules.js';
 
 // 当たり判定（元画像ピクセル）。足元側に寄せる。
 const BODY_W = 12;
@@ -92,7 +93,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (shouldJump(this.jumpState, time, onGround)) {
       this.setVelocityY(jumpVelocityY(dir));
       this.jumpState = consumeJump(this.jumpState);
-      this.scene.sound.play(SFX.jump);
+      playSfx(this.scene, SFX.jump);
     }
     // 可変ジャンプ: 離したとき、足元から離れる向きに動いていれば縮める
     const jumpReleased = Phaser.Input.Keyboard.JustUp(keys.jumpZ) || Phaser.Input.Keyboard.JustUp(keys.jumpSpace);
@@ -104,10 +105,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const flipPressed = Phaser.Input.Keyboard.JustDown(keys.flipX) || Phaser.Input.Keyboard.JustDown(keys.flipUp);
     if (flipPressed && canFlip(this.flipState, onGround)) {
       this.flipState = applyFlip(this.flipState, onGround);
+      this.jumpState = onFlip(this.jumpState);
       this.setVelocityY(0);
       this.applyGravityVisuals();
-      this.scene.sound.play(SFX.flip);
       this.scene.events.emit('gravity-flipped', this.gravityDir);
+      playSfx(this.scene, SFX.flip);
     }
 
     body.setGravityY(GRAVITY * this.gravityDir);
