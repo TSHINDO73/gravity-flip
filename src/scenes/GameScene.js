@@ -227,7 +227,8 @@ export class GameScene extends Phaser.Scene {
 
   update(time, delta) {
     if (!this.player) return;
-    if (Phaser.Input.Keyboard.JustDown(this.rKey)) {
+    // ゴール後の画面切り替え待ちの間はやり直しを受け付けない(クリアが消えるため)
+    if (!this.reachedGoal && Phaser.Input.Keyboard.JustDown(this.rKey)) {
       this.restartStage();
       return;
     }
