@@ -18,8 +18,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   init(data) {
-    const { stage = 0, coins = 0, elapsedMs = 0 } = data || {};
+    const { stage = 0, coins = 0, elapsedMs = 0, fullRun = false } = data || {};
     this.stage = stage;
+    // タイトルから1面を始めた通しプレイだけをベスト記録の対象にする
+    this.fullRun = fullRun;
     this.coins = coins;
     this.elapsedMs = elapsedMs;
     this.coinsAtStageStart = coins;
@@ -206,10 +208,10 @@ export class GameScene extends Phaser.Scene {
     this.reachedGoal = true;
     this.player.setVelocity(0, 0);
     this.player.body.enable = false;
-    const { stage, coins, elapsedMs } = this;
+    const { stage, coins, elapsedMs, fullRun } = this;
     this.time.delayedCall(400, () => {
-      if (stage < LEVELS.length - 1) this.scene.restart({ stage: stage + 1, coins, elapsedMs });
-      else this.scene.start('ClearScene', { coins, elapsedMs });
+      if (stage < LEVELS.length - 1) this.scene.restart({ stage: stage + 1, coins, elapsedMs, fullRun });
+      else this.scene.start('ClearScene', { coins, elapsedMs, fullRun });
     });
     playSfx(this, SFX.clear);
   }
@@ -220,7 +222,7 @@ export class GameScene extends Phaser.Scene {
 
   // やり直し: コインはステージ開始時に戻すが、タイムは戻さない(経過時間をそのまま引き継ぐ)
   restartStage() {
-    this.scene.restart({ stage: this.stage, coins: this.coinsAtStageStart, elapsedMs: this.elapsedMs });
+    this.scene.restart({ stage: this.stage, coins: this.coinsAtStageStart, elapsedMs: this.elapsedMs, fullRun: this.fullRun });
   }
 
   update(time, delta) {
