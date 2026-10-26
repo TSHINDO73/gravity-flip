@@ -65,6 +65,13 @@ test('saveBest / loadBest: 保存したものを読み戻せる', () => {
   assertEqual(loadBest(s), { timeMs: 90000, coins: 10 });
 });
 
+// 実際のタイムはフレーム時間の合計なので小数になる
+test('saveBest / loadBest: 小数のタイムも読み戻せる', () => {
+  const s = fakeStorage();
+  saveBest(s, { timeMs: 83456.78, coins: 10 });
+  assertEqual(loadBest(s), { timeMs: 83456.78, coins: 10 });
+});
+
 test('saveBest / loadBest: 保存できない環境でも止まらない', () => {
   assertEqual(loadBest(brokenStorage), null);
   saveBest(brokenStorage, { timeMs: 90000, coins: 10 });

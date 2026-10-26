@@ -1,6 +1,8 @@
 const KEY = 'gravity-flip-best';
 
 const isCount = (n) => Number.isInteger(n) && n >= 0;
+// タイムはフレーム時間の合計なので小数になる
+const isTime = (n) => Number.isFinite(n) && n >= 0;
 
 // タイムは短いほど、コインは多いほど良い。2つは別々に比べる
 export function mergeBest(prev, run) {
@@ -18,7 +20,7 @@ export function parseBest(raw) {
   if (raw == null) return null;
   try {
     const { timeMs, coins } = JSON.parse(raw);
-    return isCount(timeMs) && isCount(coins) ? { timeMs, coins } : null;
+    return isTime(timeMs) && isCount(coins) ? { timeMs, coins } : null;
   } catch {
     return null;
   }
