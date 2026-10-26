@@ -16,7 +16,8 @@ try {
         } catch { Start-Sleep -Milliseconds 200 }
     }
     if (-not $ready) { throw 'server did not start' }
-    $profileDir = Join-Path $env:TEMP 'gf-edge-test'
+    # 毎回新しいプロファイルを使い、前回のキャッシュで古いファイルを読まないようにする
+    $profileDir = Join-Path $env:TEMP ('gf-edge-test-' + [guid]::NewGuid())
     $dom = & $edge --headless --disable-gpu "--user-data-dir=$profileDir" --dump-dom --virtual-time-budget=5000 "http://localhost:$port/tests/" 2>$null | Out-String
     $m = [regex]::Match($dom, '(?s)<pre id="summary">(SUMMARY passed=(\d+) failed=(\d+))</pre>\s*<pre id="details">(.*?)</pre>')
     if (-not $m.Success) {
@@ -29,5 +30,6 @@ try {
     }
 } finally {
     if ($server -and -not $server.HasExited) { Stop-Process -Id $server.Id -Force }
+    if ($profileDir -and (Test-Path $profileDir)) { Remove-Item -Recurse -Force $profileDir -ErrorAction SilentlyContinue }
 }
 exit $exit

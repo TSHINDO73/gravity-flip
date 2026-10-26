@@ -20,12 +20,14 @@ try {
         } catch { Start-Sleep -Milliseconds 200 }
     }
     if (-not $ready) { throw 'server did not start' }
-    $profileDir = Join-Path $env:TEMP 'gf-edge-shot'
+    # 毎回新しいプロファイルを使い、前回のキャッシュで古いファイルを読まないようにする
+    $profileDir = Join-Path $env:TEMP ('gf-edge-shot-' + [guid]::NewGuid())
     $outFull = [System.IO.Path]::GetFullPath($Out)
     $edgeArgs = @('--headless', '--disable-gpu', "--user-data-dir=$profileDir", "--screenshot=$outFull", '--window-size=960,540', "--virtual-time-budget=$WaitMs", "http://localhost:$port/?$Query")
     Start-Process -FilePath $edge -ArgumentList $edgeArgs -Wait -WindowStyle Hidden
     Write-Output "saved: $outFull"
 } finally {
     if ($server -and -not $server.HasExited) { Stop-Process -Id $server.Id -Force }
+    if ($profileDir -and (Test-Path $profileDir)) { Remove-Item -Recurse -Force $profileDir -ErrorAction SilentlyContinue }
 }
 
