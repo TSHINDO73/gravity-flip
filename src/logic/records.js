@@ -6,7 +6,7 @@ const isTime = (n) => Number.isFinite(n) && n >= 0;
 
 // タイムは短いほど、コインは多いほど良い。2つは別々に比べる
 export function mergeBest(prev, run) {
-  if (!prev) return { best: { ...run }, newTime: true, newCoins: true };
+  if (!prev) return { best: { ...run }, newTime: true, newCoins: run.coins > 0 };
   const newTime = run.timeMs < prev.timeMs;
   const newCoins = run.coins > prev.coins;
   return {
@@ -27,7 +27,7 @@ export function parseBest(raw) {
 }
 
 // プライベートブラウズなどで保存できなくてもゲームは止めない
-export function loadBest(storage) {
+export function loadBest(storage = browserStorage()) {
   try {
     return parseBest(storage.getItem(KEY));
   } catch {
@@ -35,7 +35,7 @@ export function loadBest(storage) {
   }
 }
 
-export function saveBest(storage, best) {
+export function saveBest(best, storage = browserStorage()) {
   try {
     storage.setItem(KEY, JSON.stringify(best));
   } catch {

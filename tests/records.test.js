@@ -9,6 +9,14 @@ test('mergeBest: 初回は両方とも新記録', () => {
   });
 });
 
+test('mergeBest: 初回でもコイン0枚は新記録にしない', () => {
+  assertEqual(mergeBest(null, { timeMs: 90000, coins: 0 }), {
+    best: { timeMs: 90000, coins: 0 },
+    newTime: true,
+    newCoins: false,
+  });
+});
+
 test('mergeBest: タイムだけ更新', () => {
   assertEqual(mergeBest({ timeMs: 90000, coins: 10 }, { timeMs: 80000, coins: 5 }), {
     best: { timeMs: 80000, coins: 10 },
@@ -61,20 +69,20 @@ const brokenStorage = {
 test('saveBest / loadBest: 保存したものを読み戻せる', () => {
   const s = fakeStorage();
   assertEqual(loadBest(s), null);
-  saveBest(s, { timeMs: 90000, coins: 10 });
+  saveBest({ timeMs: 90000, coins: 10 }, s);
   assertEqual(loadBest(s), { timeMs: 90000, coins: 10 });
 });
 
 // 実際のタイムはフレーム時間の合計なので小数になる
 test('saveBest / loadBest: 小数のタイムも読み戻せる', () => {
   const s = fakeStorage();
-  saveBest(s, { timeMs: 83456.78, coins: 10 });
+  saveBest({ timeMs: 83456.78, coins: 10 }, s);
   assertEqual(loadBest(s), { timeMs: 83456.78, coins: 10 });
 });
 
 test('saveBest / loadBest: 保存できない環境でも止まらない', () => {
   assertEqual(loadBest(brokenStorage), null);
-  saveBest(brokenStorage, { timeMs: 90000, coins: 10 });
+  saveBest({ timeMs: 90000, coins: 10 }, brokenStorage);
   assertEqual(loadBest(null), null);
-  saveBest(null, { timeMs: 90000, coins: 10 });
+  saveBest({ timeMs: 90000, coins: 10 }, null);
 });

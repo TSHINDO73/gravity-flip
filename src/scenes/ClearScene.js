@@ -1,6 +1,6 @@
 import { GAME_W } from '../config.js';
 import { formatTime } from '../logic/format.js';
-import { loadBest, saveBest, mergeBest, browserStorage } from '../logic/records.js';
+import { loadBest, saveBest, mergeBest } from '../logic/records.js';
 
 const STYLE = { fontFamily: 'sans-serif', color: '#ffffff', stroke: '#000000', strokeThickness: 4 };
 
@@ -15,9 +15,8 @@ export class ClearScene extends Phaser.Scene {
     let coinLine = `コイン ${coins}`;
     let timeLine = `タイム ${formatTime(elapsedMs)}`;
     if (fullRun) {
-      const storage = browserStorage();
-      const { best, newTime, newCoins } = mergeBest(loadBest(storage), { timeMs: elapsedMs, coins });
-      saveBest(storage, best);
+      const { best, newTime, newCoins } = mergeBest(loadBest(), { timeMs: elapsedMs, coins });
+      saveBest(best);
       coinLine += newCoins ? '　NEW!' : `　(BEST ${best.coins})`;
       timeLine += newTime ? '　NEW!' : `　(BEST ${formatTime(best.timeMs)})`;
     }

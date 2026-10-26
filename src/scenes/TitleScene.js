@@ -1,6 +1,6 @@
 import { GAME_W, GAME_H } from '../config.js';
 import { formatTime } from '../logic/format.js';
-import { loadBest, browserStorage } from '../logic/records.js';
+import { loadBest } from '../logic/records.js';
 
 const STYLE = { fontFamily: 'sans-serif', color: '#ffffff', stroke: '#000000', strokeThickness: 4 };
 
@@ -15,7 +15,7 @@ export class TitleScene extends Phaser.Scene {
     lines.forEach((t, i) => {
       this.add.text(GAME_W / 2, 240 + i * 38, t, { ...STYLE, fontSize: '26px' }).setOrigin(0.5);
     });
-    const best = loadBest(browserStorage());
+    const best = loadBest();
     if (best) {
       this.add
         .text(GAME_W / 2, 400, `BEST　タイム ${formatTime(best.timeMs)}　コイン ${best.coins}`, { ...STYLE, fontSize: '24px', color: '#ffe066' })
