@@ -115,6 +115,7 @@ export class GameScene extends Phaser.Scene {
     }
     this.physics.add.overlap(this.player, this.coinGroup, (pl, coin) => {
       if (this.isDead || !coin.active) return;
+      this.effects.coin(coin.x, coin.y);
       coin.destroy();
       this.coins++;
       playSfx(this, SFX.coin);
@@ -192,6 +193,7 @@ export class GameScene extends Phaser.Scene {
       enemyCenterY: enemy.body.center.y,
     });
     if (stomp) {
+      this.effects.stomp(enemy.x, enemy.y);
       enemy.stomp();
       pl.setVelocityY(jumpVelocityY(pl.gravityDir) * 0.6);
     } else {
@@ -208,6 +210,7 @@ export class GameScene extends Phaser.Scene {
     pl.body.enable = false;
     this.tweens.add({ targets: pl, alpha: 0.2, duration: DEATH_BLINK_MS / 8, yoyo: true, repeat: 3 });
     this.time.delayedCall(DEATH_BLINK_MS, () => this.respawnPlayer());
+    this.effects.death(pl.x, pl.y);
     playSfx(this, SFX.die);
   }
 
@@ -228,6 +231,7 @@ export class GameScene extends Phaser.Scene {
       if (stage < LEVELS.length - 1) this.scene.restart({ stage: stage + 1, coins, elapsedMs, fullRun });
       else this.scene.start('ClearScene', { coins, elapsedMs, fullRun });
     });
+    this.effects.goal(this.goal.x, this.goal.y);
     playSfx(this, SFX.clear);
   }
 
