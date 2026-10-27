@@ -5,6 +5,7 @@ import { parseLevel } from '../levels/parseLevel.js';
 import { Player } from '../objects/Player.js';
 import { Enemy } from '../objects/Enemy.js';
 import { Controls } from '../objects/Controls.js';
+import { Effects } from '../objects/Effects.js';
 import { TouchPad, isTouchDevice } from '../objects/TouchPad.js';
 import { jumpVelocityY } from '../logic/jumpRules.js';
 import { formatTime } from '../logic/format.js';
@@ -130,6 +131,18 @@ export class GameScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(100);
     this.updateHud();
+
+    // 演出
+    this.effects = new Effects(this, { player: this.player, hud: this.hud });
+    const fxHandlers = {
+      'player-jumped': () => this.effects.jump(),
+      'player-landed': (impact) => this.effects.land(impact),
+      'player-flipped': () => this.effects.flip(),
+    };
+    for (const [ev, fn] of Object.entries(fxHandlers)) this.events.on(ev, fn);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      for (const [ev, fn] of Object.entries(fxHandlers)) this.events.off(ev, fn);
+    });
 
     // 歩く敵
     this.enemies = this.add.group();

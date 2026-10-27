@@ -3,6 +3,7 @@ import { IMG, FRAMES, CHAR_SRC, SFX } from '../assetKeys.js';
 import { shiftBodyToFeet } from './gravityBody.js';
 import { playSfx } from './sfx.js';
 import { createFlipState, canFlip, applyFlip, onLand } from '../logic/flipRules.js';
+import { landingImpact } from '../logic/fxRules.js';
 import { createJumpState, markGrounded, markPressed, shouldJump, consumeJump, onFlip, jumpVelocityY } from '../logic/jumpRules.js';
 
 // 当たり判定（元画像ピクセル）。足元側に寄せる。
@@ -76,6 +77,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // 体の下端 = 画像の下端なので、画像中心は足元より画像の半分だけ上
     this.body.reset(x, y - (CHAR_SRC * SCALE) / 2);
     this.setVelocity(0, 0);
+    this.lastVy = 0;
     this.body.setGravityY(GRAVITY);
   }
 
@@ -87,7 +89,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // 接地判定（足元側がブロックに触れている）
     const onGround = dir === 1 ? body.blocked.down : body.blocked.up;
     if (onGround) {
-      if (!this.grounded) this.flipState = onLand(this.flipState);
+      if (!this.grounded) {
+        this.flipState = onLand(this.flipState);
+        // 衝突でこのフレームの速度は 0 になっているので、前フレームの速度で勢いを測る
+        this.scene.events.emit('player-landed', landingImpact(this.lastVy, dir));
+      }
       this.jumpState = markGrounded(this.jumpState, time);
     }
     this.grounded = onGround;
@@ -105,6 +111,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.setVelocityY(jumpVelocityY(dir));
       this.jumpState = consumeJump(this.jumpState);
       playSfx(this.scene, SFX.jump);
+      this.scene.events.emit('player-jumped');
     }
     // 可変ジャンプ: 離したとき、足元から離れる向きに動いていれば縮める
     if (input.jumpReleased && body.velocity.y * dir < 0) {
@@ -118,6 +125,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.setVelocityY(0);
       this.applyGravityVisuals();
       this.scene.events.emit('gravity-flipped', this.gravityDir);
+      // gravity-flipped はリスポーン時にも出るので、演出用に自分で反転したときだけ出す
+      this.scene.events.emit('player-flipped');
       playSfx(this.scene, SFX.flip);
     }
 
@@ -133,6 +142,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.anims.stop();
       this.setFrame(FRAMES.player);
     }
+    this.lastVy = body.velocity.y;
   }
 
   // 体のオフセットを足元側へ移し替える。
