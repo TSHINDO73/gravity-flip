@@ -36,8 +36,15 @@ export class TitleScene extends Phaser.Scene {
         if (!e.repeat) startGame();
       }),
     );
-    this.input.on('pointerdown', () => {
-      if (done) return;
+    // 全画面はブラウザの規則で「指を離した瞬間」にしか要求できない。
+    // クリア画面で離した指に反応しないよう、この画面で指を置いたときだけ受け付ける
+    let touchStarted = false;
+    this.input.on('pointerdown', (pointer) => {
+      if (pointer.wasTouch) touchStarted = true;
+      else startGame(); // マウスのクリックは全画面にしない
+    });
+    this.input.on('pointerup', (pointer) => {
+      if (!pointer.wasTouch || !touchStarted || done) return;
       this.enterFullscreen();
       startGame();
     });
