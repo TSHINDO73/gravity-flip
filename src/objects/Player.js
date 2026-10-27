@@ -32,7 +32,29 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       });
     }
 
+    // 見た目は別のスプライトに写す。体の拡大率を変えると当たり判定まで変わるため、
+    // 伸び縮みの演出は view にだけかける(squash は Effects がトゥイーンする)
+    this.setVisible(false);
+    this.view = scene.add.sprite(x, y, IMG.chars, FRAMES.player).setScale(SCALE);
+    this.squash = { x: 1, y: 1 };
+    // 物理の計算が終わった後に写す。死亡中など update が呼ばれないフレームも含む
+    scene.events.on(Phaser.Scenes.Events.POST_UPDATE, this.syncView, this);
+    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      scene.events.off(Phaser.Scenes.Events.POST_UPDATE, this.syncView, this);
+    });
+
     this.respawn(x, y);
+  }
+
+  syncView() {
+    const { view } = this;
+    view.setPosition(this.x, this.y);
+    view.setFrame(this.frame.name);
+    view.setFlip(this.flipX, this.flipY);
+    view.setAlpha(this.alpha);
+    if (this.isTinted) view.setTint(this.tintTopLeft);
+    else view.clearTint();
+    view.setScale(SCALE * this.squash.x, SCALE * this.squash.y);
   }
 
   get gravityDir() {
