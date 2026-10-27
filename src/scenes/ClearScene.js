@@ -1,6 +1,7 @@
 import { GAME_W } from '../config.js';
 import { formatTime } from '../logic/format.js';
 import { loadBest, saveBest, mergeBest } from '../logic/records.js';
+import { isTouchDevice } from '../objects/TouchPad.js';
 
 const STYLE = { fontFamily: 'sans-serif', color: '#ffffff', stroke: '#000000', strokeThickness: 4 };
 
@@ -22,16 +23,22 @@ export class ClearScene extends Phaser.Scene {
     }
     this.add.text(GAME_W / 2, 250, coinLine, { ...STYLE, fontSize: '34px' }).setOrigin(0.5);
     this.add.text(GAME_W / 2, 310, timeLine, { ...STYLE, fontSize: '34px' }).setOrigin(0.5);
-    this.add.text(GAME_W / 2, 440, 'Z・スペース・Enterでタイトルへ', { ...STYLE, fontSize: '28px' }).setOrigin(0.5);
+    const backLabel = isTouchDevice() ? 'タップでタイトルへ' : 'Z・スペース・Enterでタイトルへ';
+    this.add.text(GAME_W / 2, 440, backLabel, { ...STYLE, fontSize: '28px' }).setOrigin(0.5);
     // 押しっぱなし(オートリピート)や直前のジャンプ入力で飛ばないよう、少し待ってから受け付ける
     let ready = false;
     let done = false;
     this.time.delayedCall(300, () => { ready = true; });
-    const onBack = (e) => {
-      if (e.repeat || !ready || done) return;
+    const back = () => {
+      if (!ready || done) return;
       done = true;
       this.scene.start('TitleScene');
     };
-    ['keydown-Z', 'keydown-SPACE', 'keydown-ENTER'].forEach((ev) => this.input.keyboard.on(ev, onBack));
+    ['keydown-Z', 'keydown-SPACE', 'keydown-ENTER'].forEach((ev) =>
+      this.input.keyboard.on(ev, (e) => {
+        if (!e.repeat) back();
+      }),
+    );
+    this.input.on('pointerdown', back);
   }
 }

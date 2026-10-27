@@ -32,17 +32,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       });
     }
 
-    const kb = scene.input.keyboard;
-    const K = Phaser.Input.Keyboard.KeyCodes;
-    this.keys = {
-      left: kb.addKey(K.LEFT),
-      right: kb.addKey(K.RIGHT),
-      jumpZ: kb.addKey(K.Z),
-      jumpSpace: kb.addKey(K.SPACE),
-      flipX: kb.addKey(K.X),
-      flipUp: kb.addKey(K.UP),
-    };
-
     this.respawn(x, y);
   }
 
@@ -68,8 +57,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.body.setGravityY(GRAVITY);
   }
 
-  update(time, delta) {
-    const { keys, body } = this;
+  // input: Controls.update() の戻り値
+  update(time, delta, input) {
+    const { body } = this;
     const dir = this.gravityDir;
 
     // 接地判定（足元側がブロックに触れている）
@@ -82,28 +72,25 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // 左右移動
     let vx = 0;
-    if (keys.left.isDown) vx -= RUN_SPEED;
-    if (keys.right.isDown) vx += RUN_SPEED;
+    if (input.left) vx -= RUN_SPEED;
+    if (input.right) vx += RUN_SPEED;
     this.setVelocityX(vx);
     if (vx !== 0) this.setFlipX(vx < 0);
 
     // ジャンプ（先行入力・コヨーテ付き）
-    const jumpPressed = Phaser.Input.Keyboard.JustDown(keys.jumpZ) || Phaser.Input.Keyboard.JustDown(keys.jumpSpace);
-    if (jumpPressed) this.jumpState = markPressed(this.jumpState, time);
+    if (input.jumpPressed) this.jumpState = markPressed(this.jumpState, time);
     if (shouldJump(this.jumpState, time, onGround)) {
       this.setVelocityY(jumpVelocityY(dir));
       this.jumpState = consumeJump(this.jumpState);
       playSfx(this.scene, SFX.jump);
     }
     // 可変ジャンプ: 離したとき、足元から離れる向きに動いていれば縮める
-    const jumpReleased = Phaser.Input.Keyboard.JustUp(keys.jumpZ) || Phaser.Input.Keyboard.JustUp(keys.jumpSpace);
-    if (jumpReleased && body.velocity.y * dir < 0) {
+    if (input.jumpReleased && body.velocity.y * dir < 0) {
       this.setVelocityY(body.velocity.y * JUMP_CUT);
     }
 
     // 重力反転（押した瞬間のみ）
-    const flipPressed = Phaser.Input.Keyboard.JustDown(keys.flipX) || Phaser.Input.Keyboard.JustDown(keys.flipUp);
-    if (flipPressed && canFlip(this.flipState, onGround)) {
+    if (input.flipPressed && canFlip(this.flipState, onGround)) {
       this.flipState = applyFlip(this.flipState, onGround);
       this.jumpState = onFlip(this.jumpState);
       this.setVelocityY(0);
