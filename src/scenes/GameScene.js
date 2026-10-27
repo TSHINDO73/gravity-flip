@@ -4,6 +4,7 @@ import { LEVELS } from '../levels/levels.js';
 import { parseLevel } from '../levels/parseLevel.js';
 import { Player } from '../objects/Player.js';
 import { Enemy } from '../objects/Enemy.js';
+import { Controls } from '../objects/Controls.js';
 import { jumpVelocityY } from '../logic/jumpRules.js';
 import { formatTime } from '../logic/format.js';
 import { playSfx } from '../objects/sfx.js';
@@ -143,7 +144,7 @@ export class GameScene extends Phaser.Scene {
     this.events.on('gravity-flipped', onFlip);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.events.off('gravity-flipped', onFlip));
 
-    this.rKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+    this.controls = new Controls(this);
 
     const cam = this.cameras.main;
     if (h < GAME_H) {
@@ -227,8 +228,9 @@ export class GameScene extends Phaser.Scene {
 
   update(time, delta) {
     if (!this.player) return;
+    const input = this.controls.update();
     // ゴール後の画面切り替え待ちの間はやり直しを受け付けない(クリアが消えるため)
-    if (!this.reachedGoal && Phaser.Input.Keyboard.JustDown(this.rKey)) {
+    if (!this.reachedGoal && input.restartPressed) {
       this.restartStage();
       return;
     }
@@ -240,7 +242,7 @@ export class GameScene extends Phaser.Scene {
     if (!this.isDead && !this.reachedGoal) this.elapsedMs += delta;
     this.updateHud();
     if (this.isDead || this.reachedGoal) return;
-    this.player.update(time, delta);
+    this.player.update(time, delta, input);
     if (isOutOfBounds(this.player.y, this.level.height * TILE, TILE)) this.killPlayer();
   }
 }
