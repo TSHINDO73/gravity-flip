@@ -5,6 +5,7 @@ import { parseLevel } from '../levels/parseLevel.js';
 import { Player } from '../objects/Player.js';
 import { Enemy } from '../objects/Enemy.js';
 import { Controls } from '../objects/Controls.js';
+import { Effects } from '../objects/Effects.js';
 import { TouchPad, isTouchDevice } from '../objects/TouchPad.js';
 import { jumpVelocityY } from '../logic/jumpRules.js';
 import { formatTime } from '../logic/format.js';
@@ -114,6 +115,7 @@ export class GameScene extends Phaser.Scene {
     }
     this.physics.add.overlap(this.player, this.coinGroup, (pl, coin) => {
       if (this.isDead || !coin.active) return;
+      this.effects.coin(coin.x, coin.y);
       coin.destroy();
       this.coins++;
       playSfx(this, SFX.coin);
@@ -130,6 +132,18 @@ export class GameScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(100);
     this.updateHud();
+
+    // 演出
+    this.effects = new Effects(this, { player: this.player });
+    const fxHandlers = {
+      'player-jumped': () => this.effects.jump(),
+      'player-landed': (impact) => this.effects.land(impact),
+      'player-flipped': () => this.effects.flip(),
+    };
+    for (const [ev, fn] of Object.entries(fxHandlers)) this.events.on(ev, fn);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      for (const [ev, fn] of Object.entries(fxHandlers)) this.events.off(ev, fn);
+    });
 
     // 歩く敵
     this.enemies = this.add.group();
@@ -179,6 +193,7 @@ export class GameScene extends Phaser.Scene {
       enemyCenterY: enemy.body.center.y,
     });
     if (stomp) {
+      this.effects.stomp(enemy.x, enemy.y);
       enemy.stomp();
       pl.setVelocityY(jumpVelocityY(pl.gravityDir) * 0.6);
     } else {
@@ -195,6 +210,7 @@ export class GameScene extends Phaser.Scene {
     pl.body.enable = false;
     this.tweens.add({ targets: pl, alpha: 0.2, duration: DEATH_BLINK_MS / 8, yoyo: true, repeat: 3 });
     this.time.delayedCall(DEATH_BLINK_MS, () => this.respawnPlayer());
+    this.effects.death(pl.x, pl.y);
     playSfx(this, SFX.die);
   }
 
@@ -215,6 +231,7 @@ export class GameScene extends Phaser.Scene {
       if (stage < LEVELS.length - 1) this.scene.restart({ stage: stage + 1, coins, elapsedMs, fullRun });
       else this.scene.start('ClearScene', { coins, elapsedMs, fullRun });
     });
+    this.effects.goal(this.goal.x, this.goal.y);
     playSfx(this, SFX.clear);
   }
 
