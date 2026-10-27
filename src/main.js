@@ -12,6 +12,12 @@ new Phaser.Game({
   height: GAME_H,
   pixelArt: true,
   backgroundColor: '#5c94fc',
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+  },
+  // マウス以外に同時に4本の指を扱う
+  input: { activePointers: 4 },
   physics: {
     default: 'arcade',
     arcade: {

@@ -5,6 +5,7 @@ import { parseLevel } from '../levels/parseLevel.js';
 import { Player } from '../objects/Player.js';
 import { Enemy } from '../objects/Enemy.js';
 import { Controls } from '../objects/Controls.js';
+import { TouchPad, isTouchDevice } from '../objects/TouchPad.js';
 import { jumpVelocityY } from '../logic/jumpRules.js';
 import { formatTime } from '../logic/format.js';
 import { playSfx } from '../objects/sfx.js';
@@ -144,7 +145,7 @@ export class GameScene extends Phaser.Scene {
     this.events.on('gravity-flipped', onFlip);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.events.off('gravity-flipped', onFlip));
 
-    this.controls = new Controls(this);
+    this.controls = new Controls(this, isTouchDevice() ? new TouchPad(this) : null);
 
     const cam = this.cameras.main;
     if (h < GAME_H) {
