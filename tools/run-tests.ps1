@@ -18,6 +18,8 @@ try {
     if (-not $ready) { throw 'server did not start' }
     # 毎回新しいプロファイルを使い、前回のキャッシュで古いファイルを読まないようにする
     $profileDir = Join-Path $env:TEMP ('gf-edge-test-' + [guid]::NewGuid())
+    # Edge が標準エラーに出す同期エラーなどで止まらないようにする(PowerShell 5.1 は Stop だと例外にする)
+    $ErrorActionPreference = 'Continue'
     $dom = & $edge --headless --disable-gpu "--user-data-dir=$profileDir" --dump-dom --virtual-time-budget=5000 "http://localhost:$port/tests/" 2>$null | Out-String
     $m = [regex]::Match($dom, '(?s)<pre id="summary">(SUMMARY passed=(\d+) failed=(\d+))</pre>\s*<pre id="details">(.*?)</pre>')
     if (-not $m.Success) {
