@@ -134,7 +134,7 @@ export class GameScene extends Phaser.Scene {
     this.updateHud();
 
     // 演出
-    this.effects = new Effects(this, { player: this.player, hud: this.hud });
+    this.effects = new Effects(this, { player: this.player });
     const fxHandlers = {
       'player-jumped': () => this.effects.jump(),
       'player-landed': (impact) => this.effects.land(impact),
