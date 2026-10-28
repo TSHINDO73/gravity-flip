@@ -1,4 +1,5 @@
 import { test, assertEqual, assertTrue } from './runner.js';
+import { JUMP_VELOCITY } from '../src/config.js';
 import { createJumpState, markGrounded, markPressed, shouldJump, consumeJump, onFlip, jumpVelocityY } from '../src/logic/jumpRules.js';
 
 test('jump: 接地中に押せば跳ぶ', () => {
@@ -20,8 +21,8 @@ test('jump: consume後は跳ばない', () => {
   assertTrue(!shouldJump(js, 1000, true));
 });
 test('jump: 初速は足元から離れる向き', () => {
-  assertEqual(jumpVelocityY(1), -560);
-  assertEqual(jumpVelocityY(-1), 560);
+  assertEqual(jumpVelocityY(1), -JUMP_VELOCITY);
+  assertEqual(jumpVelocityY(-1), JUMP_VELOCITY);
 });
 test('jump: 反転直後はコヨーテ無効(古い床へのジャンプを防ぐ)', () => {
   const js = onFlip(markGrounded(createJumpState(), 1000));
