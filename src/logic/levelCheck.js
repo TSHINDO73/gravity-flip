@@ -22,3 +22,19 @@ export function findLowGaps(rows) {
   }
   return gaps;
 }
+
+// 敵を踏むのに十分な高さ(敵のマスを含めて 4 マス)が無い敵を探す。
+// 主人公(約 1.6 マス)と敵(約 1.4 マス)を縦に重ねると約 3 マス。踏むための跳び出しの余裕に 1 マス足す
+const ENEMY_HEADROOM = 4;
+export function findCrampedEnemies(rows) {
+  const cramped = [];
+  rows.forEach((row, r) => {
+    for (let c = 0; c < row.length; c++) {
+      if (row[c] !== 'E') continue;
+      let h = 0;
+      while (r - h >= 0 && rows[r - h][c] !== '#') h++;
+      if (h < ENEMY_HEADROOM) cramped.push({ col: c, row: r });
+    }
+  });
+  return cramped;
+}
