@@ -1,5 +1,6 @@
-﻿import { GAME_W, GAME_H, TILE, SCALE } from '../config.js';
-import { IMG, FRAMES, SFX } from '../assetKeys.js';
+﻿import { GAME_W, GAME_H, TILE, SCALE, HUD_H, PLAY_W, PLAY_H } from '../config.js';
+import { SFX } from '../assetKeys.js';
+import { autotile } from '../logic/autotile.js';
 import { LEVELS } from '../levels/levels.js';
 import { parseLevel } from '../levels/parseLevel.js';
 import { Player } from '../objects/Player.js';
@@ -63,7 +64,8 @@ export class GameScene extends Phaser.Scene {
     this.solidLayer = this.physics.add.staticGroup();
     for (const cell of this.level.blocks) {
       const p = this.tileCenter(cell);
-      const block = this.solidLayer.create(p.x, p.y, IMG.tiles, FRAMES.block).setScale(SCALE).refreshBody();
+      const tile = autotile((c, r) => this.isSolidOrOutside(c, r), cell.col, cell.row);
+      const block = this.solidLayer.create(p.x, p.y, 'terrain', tile.frame).setScale(SCALE).setFlipY(tile.flipY).refreshBody();
       // 隣もブロックの面(壁の内側の継ぎ目)は当たり判定を切る。壁の途中に「着地」して引っかかるのを防ぐ
       const { col, row } = cell;
       const cc = block.body.checkCollision;
@@ -74,6 +76,8 @@ export class GameScene extends Phaser.Scene {
       cc.none = !(cc.up || cc.down || cc.left || cc.right);
     }
 
+    this.fillOutside();
+
     this.respawnPoint = this.level.start;
     this.player = new Player(this, 0, 0);
     this.placePlayerAt(this.respawnPoint);
@@ -83,7 +87,7 @@ export class GameScene extends Phaser.Scene {
     this.spikeGroup = this.physics.add.staticGroup();
     for (const sp of this.level.spikes) {
       const p = this.tileCenter(sp);
-      this.add.image(p.x, p.y, IMG.tiles, FRAMES.spike).setScale(SCALE).setFlipY(sp.dir === 'down');
+      this.add.image(p.x, p.y, 'spike').setScale(SCALE).setFlipY(sp.dir === 'down');
       const tipShift = (TILE - SPIKE_HIT) / 2;
       const zone = this.add.zone(p.x, p.y + (sp.dir === 'up' ? tipShift : -tipShift), SPIKE_HIT, SPIKE_HIT);
       this.physics.add.existing(zone, true);
@@ -91,31 +95,39 @@ export class GameScene extends Phaser.Scene {
     }
     this.physics.add.overlap(this.player, this.spikeGroup, () => this.killPlayer());
 
-    // 中間旗
+    // 中間旗: 絵は大きい(4 マス)が、当たり判定は 1 マスのゾーン。通過した旗だけ旗を立てる
     this.flags = this.physics.add.staticGroup();
     for (const cell of this.level.checkpoints) {
       const p = this.tileCenter(cell);
-      const flag = this.flags.create(p.x, p.y, IMG.tiles, FRAMES.checkpoint).setScale(SCALE).refreshBody();
-      flag.cell = cell;
-      flag.setAlpha(0.6);
+      const zone = this.add.zone(p.x, p.y, TILE, TILE);
+      this.physics.add.existing(zone, true);
+      zone.cell = cell;
+      zone.image = this.add.sprite(p.x, p.y + TILE / 2, 'cpNoFlag').setOrigin(0.5, 1).setScale(SCALE);
+      this.flags.add(zone);
     }
     this.physics.add.overlap(this.player, this.flags, (pl, flag) => {
-      if (this.isDead) return;
+      if (this.isDead || this.respawnPoint === flag.cell) return;
       this.respawnPoint = flag.cell;
-      this.flags.getChildren().forEach((f) => { f.clearTint(); f.setAlpha(0.6); });
-      flag.setAlpha(1);
-      flag.setTint(0xffe040);
+      for (const f of this.flags.getChildren()) {
+        if (f !== flag) f.image.stop().setTexture('cpNoFlag');
+      }
+      flag.image.play('cpOut').chain('cpIdle');
     });
 
     // コイン
     this.coinGroup = this.physics.add.staticGroup();
     for (const cell of this.level.coins) {
       const p = this.tileCenter(cell);
-      this.coinGroup.create(p.x, p.y, IMG.tiles, FRAMES.coin).setScale(SCALE).refreshBody();
+      // 絵は 2 マス分の大きさ。当たり判定は 1 マスに縮める
+      const coin = this.coinGroup.create(p.x, p.y, 'apple').setScale(SCALE).refreshBody();
+      coin.body.setSize(TILE, TILE);
+      coin.play('apple');
     }
     this.physics.add.overlap(this.player, this.coinGroup, (pl, coin) => {
       if (this.isDead || !coin.active) return;
       this.effects.coin(coin.x, coin.y);
+      const got = this.add.sprite(coin.x, coin.y, 'collected').setScale(SCALE).play('collected');
+      got.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => got.destroy());
       coin.destroy();
       this.coins++;
       playSfx(this, SFX.coin);
@@ -123,7 +135,9 @@ export class GameScene extends Phaser.Scene {
 
     // ゴール
     const gp = this.tileCenter(this.level.goal);
-    this.goal = this.physics.add.staticImage(gp.x, gp.y, IMG.tiles, FRAMES.goal).setScale(SCALE).refreshBody();
+    this.add.image(gp.x, gp.y + TILE / 2, 'end').setOrigin(0.5, 1).setScale(SCALE);
+    this.goal = this.add.zone(gp.x, gp.y, TILE, TILE);
+    this.physics.add.existing(this.goal, true);
     this.physics.add.overlap(this.player, this.goal, () => this.onGoal());
 
     // HUD
@@ -161,9 +175,11 @@ export class GameScene extends Phaser.Scene {
 
     this.controls = new Controls(this, isTouchDevice() ? new TouchPad(this) : null);
 
+    // カメラはプレイ画面(960x480)だけを映す。HUD とボタンはその外側
     const cam = this.cameras.main;
-    if (h < GAME_H) {
-      cam.setBounds(0, -(GAME_H - h) / 2, w, GAME_H);
+    cam.setViewport((this.scale.width - PLAY_W) / 2, HUD_H, PLAY_W, PLAY_H);
+    if (h < PLAY_H) {
+      cam.setBounds(0, -(PLAY_H - h) / 2, w, PLAY_H);
     } else {
       cam.setBounds(0, 0, w, h);
     }
@@ -176,6 +192,25 @@ export class GameScene extends Phaser.Scene {
     this.player.body.enable = true;
     this.player.setAlpha(1);
     this.player.respawn(c.x, c.y + TILE / 2);
+  }
+
+  // ステージがプレイ画面より低いとき、上下の余白を土で埋めて、地面と天井が画面の端まで続いて見えるようにする(見た目だけ)
+  fillOutside() {
+    const { width, height } = this.level;
+    const extra = Math.ceil(Math.max(0, PLAY_H - height * TILE) / 2 / TILE);
+    if (extra === 0) return;
+    for (let c = 0; c < width; c++) {
+      for (let i = 1; i <= extra; i++) {
+        if (this.level.solid[0][c]) this.add.image(c * TILE + TILE / 2, -i * TILE + TILE / 2, 'terrain', 29).setScale(SCALE);
+        if (this.level.solid[height - 1][c]) this.add.image(c * TILE + TILE / 2, (height - 1 + i) * TILE + TILE / 2, 'terrain', 29).setScale(SCALE);
+      }
+    }
+  }
+
+  // オートタイル用: ステージの外はブロックがあるものとして扱う(端のブロックに余計な縁を付けない)
+  isSolidOrOutside(col, row) {
+    if (col < 0 || row < 0 || row >= this.level.height || col >= this.level.width) return true;
+    return this.level.solid[row][col];
   }
 
   isSolidAt(col, row) {
@@ -210,6 +245,7 @@ export class GameScene extends Phaser.Scene {
     pl.body.enable = false;
     this.tweens.add({ targets: pl, alpha: 0.2, duration: DEATH_BLINK_MS / 8, yoyo: true, repeat: 3 });
     this.time.delayedCall(DEATH_BLINK_MS, () => this.respawnPlayer());
+    pl.playHit();
     this.effects.death(pl.x, pl.y);
     playSfx(this, SFX.die);
   }

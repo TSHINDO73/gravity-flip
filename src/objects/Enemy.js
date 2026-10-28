@@ -1,9 +1,11 @@
 import { GRAVITY, ENEMY_SPEED, MAX_FALL_SPEED, SCALE, TILE } from '../config.js';
-import { IMG, FRAMES, CHAR_SRC } from '../assetKeys.js';
+import { CHAR_SRC } from '../assetKeys.js';
+import { aheadGroundCell } from '../logic/enemyRules.js';
 import { shiftBodyToFeet } from './gravityBody.js';
 
-const BODY_W = 16;
-const BODY_H = 16;
+// 当たり判定（元画像ピクセル）。絵（幅 24・高さ 28 ほど）に合わせて、足元側に寄せる
+const BODY_W = 14;
+const BODY_H = 22;
 const BODY_OFF_X = (CHAR_SRC - BODY_W) / 2;
 const OFF_Y_DOWN = CHAR_SRC - BODY_H;
 const OFF_Y_UP = 0;
@@ -11,7 +13,7 @@ const OFF_Y_UP = 0;
 export class Enemy extends Phaser.Physics.Arcade.Sprite {
   // x: 中心x, y: 足元の位置（重力下前提でのブロック上面）
   constructor(scene, x, y) {
-    super(scene, x, y - (CHAR_SRC * SCALE) / 2, IMG.chars, FRAMES.enemy);
+    super(scene, x, y - (CHAR_SRC * SCALE) / 2, 'enemyRun', 0);
     scene.add.existing(this);
     scene.physics.add.existing(this);
     this.setScale(SCALE);
@@ -23,15 +25,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.dying = false;
     this.body.setGravityY(GRAVITY);
 
-    if (!scene.anims.exists('enemy-walk')) {
-      scene.anims.create({
-        key: 'enemy-walk',
-        frames: FRAMES.enemyWalk.map((f) => ({ key: IMG.chars, frame: f })),
-        frameRate: 6,
-        repeat: -1,
-      });
-    }
-    this.anims.play('enemy-walk');
+    this.anims.play('enemyRun');
     this.setFlipX(true);
   }
 
@@ -52,10 +46,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     let turn = (this.walkDir < 0 && body.blocked.left) || (this.walkDir > 0 && body.blocked.right);
     if (!turn && onGround) {
-      const aheadX = body.center.x + this.walkDir * (body.halfWidth + 1);
-      const col = Math.floor(aheadX / TILE);
-      const row = Math.floor(body.center.y / TILE);
-      if (!isSolidAt(col, row + dir)) turn = true;
+      const feetY = dir === 1 ? body.bottom : body.top;
+      const { col, row } = aheadGroundCell(body.center.x, feetY, this.walkDir, body.halfWidth, dir, TILE);
+      if (!isSolidAt(col, row)) turn = true;
     }
     if (turn) this.walkDir = -this.walkDir;
     this.setVelocityX(this.walkDir * ENEMY_SPEED);
@@ -66,7 +59,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (this.dying) return;
     this.dying = true;
     this.body.enable = false;
-    this.anims.stop();
+    this.anims.play('enemyHit');
     this.scene.tweens.add({
       targets: this,
       scaleY: 0.2 * SCALE,

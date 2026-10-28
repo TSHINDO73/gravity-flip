@@ -1,4 +1,4 @@
-﻿import { IMG, TILE_SRC, CHAR_SRC, SFX } from '../assetKeys.js';
+﻿import { SHEETS, ANIMS, ANIM_FPS, SFX } from '../assetKeys.js';
 import { LEVELS } from '../levels/levels.js';
 
 export class BootScene extends Phaser.Scene {
@@ -10,12 +10,16 @@ export class BootScene extends Phaser.Scene {
     this.load.on('loaderror', (file) => {
       console.error('素材の読み込みに失敗しました: ' + (file.src || file.key));
     });
-    this.load.spritesheet(IMG.tiles, 'assets/tiles.png', { frameWidth: TILE_SRC, frameHeight: TILE_SRC });
-    this.load.spritesheet(IMG.chars, 'assets/characters.png', { frameWidth: CHAR_SRC, frameHeight: CHAR_SRC });
+    for (const [key, { path, size }] of Object.entries(SHEETS)) {
+      this.load.spritesheet(key, path, { frameWidth: size, frameHeight: size });
+    }
     for (const name of Object.keys(SFX)) this.load.audio(SFX[name], 'assets/sfx/' + name + '.ogg');
   }
 
   create() {
+    for (const [key, { sheet, repeat }] of Object.entries(ANIMS)) {
+      this.anims.create({ key, frames: this.anims.generateFrameNumbers(sheet), frameRate: ANIM_FPS, repeat });
+    }
     const n = Number(new URLSearchParams(window.location.search).get('stage'));
     if (Number.isInteger(n) && n >= 1 && n <= LEVELS.length) {
       this.scene.start('GameScene', { stage: n - 1 });

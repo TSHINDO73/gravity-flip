@@ -10,10 +10,11 @@ test('landingImpact: 足元から離れる向きは負', () => {
   assertEqual(landingImpact(-500, 1), -500);
 });
 
-test('shouldDust: 境界は 350', () => {
-  assertEqual(LAND_DUST_MIN_SPEED, 350);
-  assertEqual(shouldDust(349), false);
-  assertEqual(shouldDust(350), true);
+// リメイクで 1 マスが 36px → 32px になったので、350 × 8/9
+test('shouldDust: 境界は 350 × 8/9', () => {
+  assertEqual(LAND_DUST_MIN_SPEED, 350 * 8 / 9);
+  assertEqual(shouldDust(350 * 8 / 9 - 0.01), false);
+  assertEqual(shouldDust(350 * 8 / 9), true);
   assertEqual(shouldDust(landingImpact(-400, -1)), true);
   assertEqual(shouldDust(landingImpact(-400, 1)), false);
 });

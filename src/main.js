@@ -6,7 +6,7 @@ import { ClearScene } from './scenes/ClearScene.js';
 
 const params = new URLSearchParams(window.location.search);
 
-new Phaser.Game({
+const game = new Phaser.Game({
   type: Phaser.AUTO,
   width: GAME_W,
   height: GAME_H,
@@ -28,3 +28,5 @@ new Phaser.Game({
   scene: [BootScene, TitleScene, GameScene, ClearScene],
 });
 
+// 開発用: ?debug=1 のときだけ、ブラウザのコンソールや自動確認からゲームを触れるようにする
+if (params.get('debug') === '1') window.game = game;
