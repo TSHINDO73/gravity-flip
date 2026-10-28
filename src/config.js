@@ -23,4 +23,6 @@ export const JUMP_CUT = 0.45;
 export const MAX_FALL_SPEED = 900 * LENGTH_SCALE;
 export const COYOTE_MS = 100;
 export const BUFFER_MS = 100;
+// スマホは着地直前のタップを取りこぼしやすいので、先行入力の猶予を長くする
+export const TOUCH_BUFFER_MS = 150;
 export const ENEMY_SPEED = 60 * LENGTH_SCALE;

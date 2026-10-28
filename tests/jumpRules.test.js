@@ -1,5 +1,5 @@
 import { test, assertEqual, assertTrue } from './runner.js';
-import { JUMP_VELOCITY } from '../src/config.js';
+import { JUMP_VELOCITY, TOUCH_BUFFER_MS } from '../src/config.js';
 import { createJumpState, markGrounded, markPressed, shouldJump, consumeJump, onFlip, jumpVelocityY } from '../src/logic/jumpRules.js';
 
 test('jump: 接地中に押せば跳ぶ', () => {
@@ -32,4 +32,12 @@ test('jump: 反転しても先行入力は残る', () => {
   const js = onFlip(markPressed(createJumpState(), 1000));
   assertEqual(js.lastPressedAt, 1000);
   assertTrue(shouldJump(js, 1050, true));
+});
+
+// スマホは着地直前のタップを取りこぼしやすいので、先行入力の猶予を長くできる
+test('jump: 先行入力の猶予を指定できる(スマホは 150ms)', () => {
+  const js = markPressed(createJumpState(), 1000);
+  assertTrue(!shouldJump(js, 1150, true));
+  assertTrue(shouldJump(js, 1150, true, TOUCH_BUFFER_MS));
+  assertTrue(!shouldJump(js, 1151, true, TOUCH_BUFFER_MS));
 });

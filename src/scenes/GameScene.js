@@ -1,4 +1,4 @@
-﻿import { TILE, SCALE, HUD_H, PLAY_W, PLAY_H } from '../config.js';
+﻿import { TILE, SCALE, HUD_H, PLAY_W, PLAY_H, BUFFER_MS, TOUCH_BUFFER_MS } from '../config.js';
 import { SFX } from '../assetKeys.js';
 import { autotile } from '../logic/autotile.js';
 import { LEVELS } from '../levels/levels.js';
@@ -81,7 +81,7 @@ export class GameScene extends Phaser.Scene {
     this.fillOutside();
 
     this.respawnPoint = this.level.start;
-    this.player = new Player(this, 0, 0);
+    this.player = new Player(this, 0, 0, { bufferMs: isTouchDevice() ? TOUCH_BUFFER_MS : BUFFER_MS });
     this.placePlayerAt(this.respawnPoint);
     this.physics.add.collider(this.player, this.solidLayer);
 

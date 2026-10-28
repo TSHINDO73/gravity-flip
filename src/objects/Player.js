@@ -1,4 +1,4 @@
-﻿import { GRAVITY, RUN_SPEED, MAX_FALL_SPEED, JUMP_CUT, SCALE } from '../config.js';
+﻿import { GRAVITY, RUN_SPEED, MAX_FALL_SPEED, JUMP_CUT, SCALE, BUFFER_MS } from '../config.js';
 import { CHAR_SRC, SFX } from '../assetKeys.js';
 import { shiftBodyToFeet } from './gravityBody.js';
 import { playSfx } from './sfx.js';
@@ -14,8 +14,10 @@ const OFF_Y_DOWN = CHAR_SRC - BODY_H; // 重力が下: 体は画像の下側
 const OFF_Y_UP = 0; // 重力が上: 体は画像の上側
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, x, y) {
+  // bufferMs: ジャンプの先行入力の猶予(スマホは長め)
+  constructor(scene, x, y, { bufferMs = BUFFER_MS } = {}) {
     super(scene, x, y, 'pinkIdle', 0);
+    this.bufferMs = bufferMs;
     scene.add.existing(this);
     scene.physics.add.existing(this);
     this.setScale(SCALE);
@@ -99,7 +101,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // ジャンプ（先行入力・コヨーテ付き）
     if (input.jumpPressed) this.jumpState = markPressed(this.jumpState, time);
-    if (shouldJump(this.jumpState, time, onGround)) {
+    if (shouldJump(this.jumpState, time, onGround, this.bufferMs)) {
       this.setVelocityY(jumpVelocityY(dir));
       this.jumpState = consumeJump(this.jumpState);
       playSfx(this.scene, SFX.jump);

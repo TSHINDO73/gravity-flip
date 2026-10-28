@@ -12,9 +12,10 @@ export function markPressed(js, now) {
   return { ...js, lastPressedAt: now };
 }
 
-export function shouldJump(js, now, onGround) {
+// bufferMs: 先行入力の猶予(押してから着地するまで、何 ms 以内なら跳ぶか)
+export function shouldJump(js, now, onGround, bufferMs = BUFFER_MS) {
   return (onGround || now - js.lastGroundedAt <= COYOTE_MS) &&
-    now - js.lastPressedAt <= BUFFER_MS;
+    now - js.lastPressedAt <= bufferMs;
 }
 
 export function consumeJump(js) {
