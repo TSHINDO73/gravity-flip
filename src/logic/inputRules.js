@@ -1,19 +1,25 @@
-// タッチボタンの配置（タッチ端末のゲーム全体 1280x540 基準）。プレイ画面の外、左右の列に置く
+// タッチボタンの配置（タッチ端末のゲーム全体 1280x540 基準）。プレイ画面の外、左右の列に置く。
+// r は見た目の半径、hit は反応する範囲の半径(押しやすいよう見た目より広い)
 export const TOUCH_BUTTONS = [
-  { id: 'left', x: 42, y: 430, r: 36 },
-  { id: 'right', x: 118, y: 430, r: 36 },
-  { id: 'flip', x: 1200, y: 330, r: 40 },
-  { id: 'jump', x: 1200, y: 440, r: 46 },
-  { id: 'restart', x: 1200, y: 30, r: 26 },
+  { id: 'left', x: 42, y: 430, r: 36, hit: 48 },
+  { id: 'right', x: 118, y: 430, r: 36, hit: 48 },
+  { id: 'flip', x: 1200, y: 330, r: 40, hit: 56 },
+  { id: 'jump', x: 1200, y: 440, r: 46, hit: 70 },
+  { id: 'restart', x: 1200, y: 30, r: 26, hit: 34 },
 ];
 
+// 反応範囲が重なった所では、指に一番近いボタンを選ぶ
 export function hitButton(buttons, x, y) {
+  let best = null;
+  let bestD2 = Infinity;
   for (const b of buttons) {
-    const dx = x - b.x;
-    const dy = y - b.y;
-    if (dx * dx + dy * dy <= b.r * b.r) return b.id;
+    const d2 = (x - b.x) ** 2 + (y - b.y) ** 2;
+    if (d2 <= b.hit * b.hit && d2 < bestD2) {
+      best = b.id;
+      bestD2 = d2;
+    }
   }
-  return null;
+  return best;
 }
 
 // 指ごとに乗っているボタンを集める。同じボタンに複数の指が乗っても1つ

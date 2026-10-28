@@ -6,15 +6,15 @@ const ids = (set) => [...set].sort();
 test('hitButton: 中心・境界・外', () => {
   // 座標はタッチ端末のゲーム全体(1280x540)基準。ボタンは左右の列にある
   assertEqual(hitButton(TOUCH_BUTTONS, 42, 430), 'left');
-  assertEqual(hitButton(TOUCH_BUTTONS, 42 - 36, 430), 'left');
-  assertEqual(hitButton(TOUCH_BUTTONS, 42 - 37, 430), null);
+  assertEqual(hitButton(TOUCH_BUTTONS, 42 - 48, 430), 'left');
+  assertEqual(hitButton(TOUCH_BUTTONS, 42, 430 + 49), null);
   assertEqual(hitButton(TOUCH_BUTTONS, 118, 430), 'right');
   assertEqual(hitButton(TOUCH_BUTTONS, 1200, 330), 'flip');
   assertEqual(hitButton(TOUCH_BUTTONS, 1200, 440), 'jump');
   assertEqual(hitButton(TOUCH_BUTTONS, 1200, 30), 'restart');
   // プレイ画面(160〜1120)の中はどのボタンにも当たらない
   assertEqual(hitButton(TOUCH_BUTTONS, 640, 300), null);
-  assertEqual(hitButton(TOUCH_BUTTONS, 161, 430), null);
+  assertEqual(hitButton(TOUCH_BUTTONS, 170, 430), null);
   assertEqual(hitButton(TOUCH_BUTTONS, 1119, 440), null);
 });
 
@@ -58,4 +58,22 @@ test('jumpReleased: キーを離したら可変ジャンプの「離した」に
   assertEqual(jumpReleased(true, false), true);
   assertEqual(jumpReleased(true, true), false);
   assertEqual(jumpReleased(false, false), false);
+});
+
+// 見た目より広い反応範囲(hit)。重なった所では指に一番近いボタンが反応する
+test('hitButton: 見た目より広い反応範囲', () => {
+  assertEqual(hitButton(TOUCH_BUTTONS, 1200 + 70, 440), 'jump');
+  assertEqual(hitButton(TOUCH_BUTTONS, 1200, 440 + 71), null);
+  assertEqual(hitButton(TOUCH_BUTTONS, 42 - 48, 430), 'left');
+  assertEqual(hitButton(TOUCH_BUTTONS, 118 + 48, 430), 'right');
+  assertEqual(hitButton(TOUCH_BUTTONS, 1200, 330 - 56), 'flip');
+  assertEqual(hitButton(TOUCH_BUTTONS, 1200 + 34, 30), 'restart');
+  assertEqual(hitButton(TOUCH_BUTTONS, 1200, 30 + 35), null);
+});
+
+test('hitButton: 反応範囲が重なった所では一番近いボタン', () => {
+  assertEqual(hitButton(TOUCH_BUTTONS, 78, 430), 'left'); // ← から 36、→ から 40
+  assertEqual(hitButton(TOUCH_BUTTONS, 82, 430), 'right'); // ← から 40、→ から 36
+  assertEqual(hitButton(TOUCH_BUTTONS, 1200, 380), 'flip'); // 反転から 50、ジャンプから 60
+  assertEqual(hitButton(TOUCH_BUTTONS, 1200, 390), 'jump'); // 反転から 60、ジャンプから 50
 });
