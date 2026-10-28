@@ -7,6 +7,7 @@ import { Player } from '../objects/Player.js';
 import { Enemy } from '../objects/Enemy.js';
 import { Controls } from '../objects/Controls.js';
 import { Effects } from '../objects/Effects.js';
+import { Background, STAGE_SKIES } from '../objects/Background.js';
 import { TouchPad, isTouchDevice } from '../objects/TouchPad.js';
 import { jumpVelocityY } from '../logic/jumpRules.js';
 import { formatTime } from '../logic/format.js';
@@ -54,6 +55,8 @@ export class GameScene extends Phaser.Scene {
       this.scene.pause();
       return;
     }
+
+    this.background = new Background(this, STAGE_SKIES[this.stage % STAGE_SKIES.length], { width: PLAY_W, height: PLAY_H });
 
     const w = this.level.width * TILE;
     const h = this.level.height * TILE;
@@ -282,6 +285,7 @@ export class GameScene extends Phaser.Scene {
 
   update(time, delta) {
     if (!this.player) return;
+    this.background.update(this.cameras.main.scrollX);
     const input = this.controls.update();
     // ゴール後の画面切り替え待ちの間はやり直しを受け付けない(クリアが消えるため)
     if (!this.reachedGoal && input.restartPressed) {
