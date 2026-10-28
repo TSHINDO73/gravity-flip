@@ -37,3 +37,9 @@ export function diffPressed(prev, curr) {
   }
   return { pressed, released };
 }
+
+// 可変ジャンプの「離した」。キーボードの状態だけで決める(スマホのボタンは軽いタップでも最大の高さで跳ぶように、
+// タッチの指を離しても跳び上がりを縮めない)
+export function jumpReleased(prevKeyDown, keyDown) {
+  return prevKeyDown && !keyDown;
+}

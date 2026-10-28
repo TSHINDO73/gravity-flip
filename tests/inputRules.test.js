@@ -1,5 +1,5 @@
 import { test, assertEqual } from './runner.js';
-import { TOUCH_BUTTONS, hitButton, pressedSet, diffPressed } from '../src/logic/inputRules.js';
+import { TOUCH_BUTTONS, hitButton, pressedSet, diffPressed, jumpReleased } from '../src/logic/inputRules.js';
 
 const ids = (set) => [...set].sort();
 
@@ -51,4 +51,11 @@ test('diffPressed: 前フレームなしは差分なし', () => {
   const d = diffPressed(null, new Set(['restart', 'jump']));
   assertEqual(ids(d.pressed), []);
   assertEqual(ids(d.released), []);
+});
+
+// 可変ジャンプ(離すと低くなる)はキーボードだけ。スマホは軽くタップしても最大の高さで跳ぶ
+test('jumpReleased: キーを離したら可変ジャンプの「離した」になる', () => {
+  assertEqual(jumpReleased(true, false), true);
+  assertEqual(jumpReleased(true, true), false);
+  assertEqual(jumpReleased(false, false), false);
 });
