@@ -11,9 +11,8 @@ import { Background, STAGE_SKIES } from '../objects/Background.js';
 import { isTouchDevice } from '../objects/TouchPad.js';
 import { jumpVelocityY } from '../logic/jumpRules.js';
 import { playSfx } from '../objects/sfx.js';
-import { isOutOfBounds, isStomp } from '../logic/combatRules.js';
+import { isOutOfBounds, isStomp, spikeHitbox } from '../logic/combatRules.js';
 
-const SPIKE_HIT = TILE * 0.6;
 const DEATH_BLINK_MS = 500;
 
 export class GameScene extends Phaser.Scene {
@@ -85,13 +84,13 @@ export class GameScene extends Phaser.Scene {
     this.placePlayerAt(this.respawnPoint);
     this.physics.add.collider(this.player, this.solidLayer);
 
-    // トゲ: 当たり判定は見た目より小さく(タイルの60%)。絵はマスの根元側半分に描かれているので根元側に寄せる
+    // トゲ: 当たり判定は絵(マスの根元側 7/16)より少し小さく、根元側に寄せる(spikeHitbox)
     this.spikeGroup = this.physics.add.staticGroup();
     for (const sp of this.level.spikes) {
       const p = this.tileCenter(sp);
       this.add.image(p.x, p.y, 'spike').setScale(SCALE).setFlipY(sp.dir === 'down');
-      const tipShift = (TILE - SPIKE_HIT) / 2;
-      const zone = this.add.zone(p.x, p.y + (sp.dir === 'up' ? tipShift : -tipShift), SPIKE_HIT, SPIKE_HIT);
+      const hit = spikeHitbox(p.x, p.y, sp.dir, TILE);
+      const zone = this.add.zone(hit.x, hit.y, hit.w, hit.h);
       this.physics.add.existing(zone, true);
       this.spikeGroup.add(zone);
     }
