@@ -1,10 +1,10 @@
-// タッチボタンの配置（ゲーム画面 960x540 基準）
+// タッチボタンの配置（タッチ端末のゲーム全体 1280x540 基準）。プレイ画面の外、左右の列に置く
 export const TOUCH_BUTTONS = [
-  { id: 'left', x: 80, y: 460, r: 45, label: '←' },
-  { id: 'right', x: 200, y: 460, r: 45, label: '→' },
-  { id: 'flip', x: 760, y: 460, r: 45, label: '反転' },
-  { id: 'jump', x: 880, y: 460, r: 45, label: 'ジャンプ' },
-  { id: 'restart', x: 910, y: 50, r: 30, label: '↻' },
+  { id: 'left', x: 42, y: 430, r: 36 },
+  { id: 'right', x: 118, y: 430, r: 36 },
+  { id: 'flip', x: 1200, y: 330, r: 40 },
+  { id: 'jump', x: 1200, y: 440, r: 46 },
+  { id: 'restart', x: 1200, y: 30, r: 26 },
 ];
 
 export function hitButton(buttons, x, y) {

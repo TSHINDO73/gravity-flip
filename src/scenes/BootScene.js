@@ -13,6 +13,7 @@ export class BootScene extends Phaser.Scene {
     for (const [key, { path, size }] of Object.entries(SHEETS)) {
       this.load.spritesheet(key, path, { frameWidth: size, frameHeight: size });
     }
+    this.load.image('font', 'assets/pa/font-white.png');
     for (const name of Object.keys(SFX)) this.load.audio(SFX[name], 'assets/sfx/' + name + '.ogg');
   }
 

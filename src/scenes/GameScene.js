@@ -8,9 +8,8 @@ import { Enemy } from '../objects/Enemy.js';
 import { Controls } from '../objects/Controls.js';
 import { Effects } from '../objects/Effects.js';
 import { Background, STAGE_SKIES } from '../objects/Background.js';
-import { TouchPad, isTouchDevice } from '../objects/TouchPad.js';
+import { isTouchDevice } from '../objects/TouchPad.js';
 import { jumpVelocityY } from '../logic/jumpRules.js';
-import { formatTime } from '../logic/format.js';
 import { playSfx } from '../objects/sfx.js';
 import { isOutOfBounds, isStomp } from '../logic/combatRules.js';
 
@@ -143,12 +142,10 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.existing(this.goal, true);
     this.physics.add.overlap(this.player, this.goal, () => this.onGoal());
 
-    // HUD
-    this.hud = this.add
-      .text(12, 10, '', { fontFamily: 'sans-serif', fontSize: '22px', color: '#ffffff', stroke: '#000000', strokeThickness: 4 })
-      .setScrollFactor(0)
-      .setDepth(100);
-    this.updateHud();
+    // HUD とスマホのボタンは UIScene(プレイ画面の外側)に描く。やり直しやステージ移動では起動し直さない
+    const touch = isTouchDevice();
+    if (!this.scene.isActive('UIScene')) this.scene.launch('UIScene', { touch });
+    this.scene.bringToTop('UIScene');
 
     // 演出
     this.effects = new Effects(this, { player: this.player });
@@ -176,7 +173,10 @@ export class GameScene extends Phaser.Scene {
     this.events.on('gravity-flipped', onFlip);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.events.off('gravity-flipped', onFlip));
 
-    this.controls = new Controls(this, isTouchDevice() ? new TouchPad(this) : null);
+    // UIScene の作成はこのフレームの後になるので、TouchPad は使う時点で取りに行く
+    const ui = this.scene.get('UIScene');
+    const touchPad = { update: () => (ui.touchPad ? ui.touchPad.update() : new Set()) };
+    this.controls = new Controls(this, touch ? touchPad : null);
 
     // カメラはプレイ画面(960x480)だけを映す。HUD とボタンはその外側
     const cam = this.cameras.main;
@@ -268,14 +268,17 @@ export class GameScene extends Phaser.Scene {
     const { stage, coins, elapsedMs, fullRun } = this;
     this.time.delayedCall(400, () => {
       if (stage < LEVELS.length - 1) this.scene.restart({ stage: stage + 1, coins, elapsedMs, fullRun });
-      else this.scene.start('ClearScene', { coins, elapsedMs, fullRun });
+      else {
+        this.scene.stop('UIScene');
+        this.scene.start('ClearScene', { coins, elapsedMs, fullRun });
+      }
     });
     this.effects.goal(this.goal.x, this.goal.y);
     playSfx(this, SFX.clear);
   }
 
   updateHud() {
-    this.hud.setText(`ステージ ${this.stage + 1}/${LEVELS.length}　コイン ${this.coins}　タイム ${formatTime(this.elapsedMs)}`);
+    this.game.events.emit('hud-update', { stage: this.stage + 1, coins: this.coins, elapsedMs: this.elapsedMs });
   }
 
   // やり直し: コインはステージ開始時に戻すが、タイムは戻さない(経過時間をそのまま引き継ぐ)
