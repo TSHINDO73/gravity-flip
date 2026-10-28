@@ -9,10 +9,6 @@ export function layoutFor(touch) {
   return { width: PLAY_W + side * 2, height: HUD_H + PLAY_H, playX: side, playY: HUD_H, hudX: side };
 }
 
-// 互換用。Task 6・7 で layoutFor と PLAY_W / PLAY_H に置き換える
-export const GAME_W = 960;
-export const GAME_H = 540;
-
 // 1 マス = 素材の 16px タイルの 2 倍
 export const TILE = 32;
 export const SCALE = 2;

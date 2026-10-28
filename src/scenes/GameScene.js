@@ -1,4 +1,4 @@
-﻿import { GAME_W, GAME_H, TILE, SCALE, HUD_H, PLAY_W, PLAY_H } from '../config.js';
+﻿import { TILE, SCALE, HUD_H, PLAY_W, PLAY_H } from '../config.js';
 import { SFX } from '../assetKeys.js';
 import { autotile } from '../logic/autotile.js';
 import { LEVELS } from '../levels/levels.js';
@@ -43,11 +43,11 @@ export class GameScene extends Phaser.Scene {
       this.level = parseLevel(LEVELS[this.stage], this.stage + 1);
     } catch (e) {
       this.add
-        .text(GAME_W / 2, GAME_H / 2, e.message, {
+        .text(this.scale.width / 2, this.scale.height / 2, e.message, {
           fontFamily: 'sans-serif',
           fontSize: '24px',
           color: '#ff3030',
-          wordWrap: { width: GAME_W - 80 },
+          wordWrap: { width: this.scale.width - 80 },
         })
         .setOrigin(0.5)
         .setScrollFactor(0);
