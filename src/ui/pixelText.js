@@ -20,15 +20,30 @@ function ensureFont(scene) {
   scene.cache.bitmapFont.add(FONT, Phaser.GameObjects.RetroFont.Parse(scene, config));
 }
 
-// 英大文字・数字・一部の記号だけ使える。shadow を付けると右下に濃い影を描く
-export function pixelText(scene, x, y, text, scale = 3, { shadow = false, tint } = {}) {
+// 英大文字・数字・一部の記号だけ使える。shadow を付けると右下に濃い影を描く。originX 0.5 で中央揃え
+export function pixelText(scene, x, y, text, scale = 3, { shadow = false, tint, originX = 0 } = {}) {
   ensureFont(scene);
   if (shadow) {
-    scene.add.bitmapText(x + scale, y + scale, FONT, text).setScale(scale).setTint(OUTLINE);
+    scene.add.bitmapText(x + scale, y + scale, FONT, text).setScale(scale).setTint(OUTLINE).setOrigin(originX, 0);
   }
-  const t = scene.add.bitmapText(x, y, FONT, text).setScale(scale);
+  const t = scene.add.bitmapText(x, y, FONT, text).setScale(scale).setOrigin(originX, 0);
   if (tint !== undefined) t.setTint(tint);
   return t;
+}
+
+// 日本語の案内文(DotGothic16、濃い縁取り)。中央揃え
+export function jpText(scene, x, y, text, size) {
+  return scene.add
+    .text(x, y, text, { fontFamily: 'DotGothic16, sans-serif', fontSize: `${size}px`, color: '#ffffff', stroke: '#1a1a2e', strokeThickness: 4 })
+    .setOrigin(0.5, 0);
+}
+
+// タイトル・クリア画面の地面(草と土を画面の幅いっぱいに並べる)
+export function groundStrip(scene, width, top) {
+  for (let x = 0; x < width; x += 32) {
+    scene.add.image(x + 16, top + 16, 'terrain', 7).setScale(2);
+    scene.add.image(x + 16, top + 48, 'terrain', 29).setScale(2);
+  }
 }
 
 // 紺塗り・白枠(3px)のパネル。外側に濃い縁を付けて背景から浮かせる

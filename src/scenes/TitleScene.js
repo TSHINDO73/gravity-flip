@@ -1,9 +1,10 @@
-import { GAME_W, GAME_H } from '../config.js';
 import { formatTime } from '../logic/format.js';
 import { loadBest } from '../logic/records.js';
 import { isTouchDevice } from '../objects/TouchPad.js';
+import { Background, STAGE_SKIES } from '../objects/Background.js';
+import { pixelText, jpText, panel, groundStrip } from '../ui/pixelText.js';
 
-const STYLE = { fontFamily: 'sans-serif', color: '#ffffff', stroke: '#000000', strokeThickness: 4 };
+const GROUND_Y = 476;
 
 export class TitleScene extends Phaser.Scene {
   constructor() {
@@ -11,20 +12,30 @@ export class TitleScene extends Phaser.Scene {
   }
 
   create() {
-    this.add.text(GAME_W / 2, 120, 'GRAVITY FLIP', { ...STYLE, fontSize: '72px' }).setOrigin(0.5);
-    const lines = ['←→　移動', 'Z・スペース　ジャンプ', 'X・↑　重力反転', 'R　やり直し'];
-    lines.forEach((t, i) => {
-      this.add.text(GAME_W / 2, 240 + i * 38, t, { ...STYLE, fontSize: '26px' }).setOrigin(0.5);
-    });
+    const { width, height } = this.scale;
+    const cx = width / 2;
+    const touch = isTouchDevice();
+    new Background(this, STAGE_SKIES[0], { width, height });
+    groundStrip(this, width, GROUND_Y);
+
+    pixelText(this, cx, 60, 'GRAVITY', 8, { shadow: true, originX: 0.5 });
+    pixelText(this, cx, 150, 'FLIP', 8, { shadow: true, originX: 0.5 });
+
+    // ベスト記録(タイムとリンゴの数)。記録がなければ出さない
     const best = loadBest();
     if (best) {
-      this.add
-        .text(GAME_W / 2, 400, `BEST　タイム ${formatTime(best.timeMs)}　コイン ${best.coins}`, { ...STYLE, fontSize: '24px', color: '#ffe066' })
-        .setOrigin(0.5);
+      panel(this, cx - 210, 262, 420, 46);
+      pixelText(this, cx - 192, 271, `BEST ${formatTime(best.timeMs)}`);
+      this.add.image(cx + 92, 285, 'apple', 0);
+      pixelText(this, cx + 112, 271, `X${best.coins}`);
     }
-    const startLabel = isTouchDevice() ? 'タップでスタート' : 'Z・スペース・Enterでスタート';
-    const start = this.add.text(GAME_W / 2, 450, startLabel, { ...STYLE, fontSize: '32px' }).setOrigin(0.5);
+
+    const start = jpText(this, cx, 336, touch ? 'タップでスタート' : 'Z・スペース・Enter でスタート', 28);
     this.tweens.add({ targets: start, alpha: 0.3, duration: 700, yoyo: true, repeat: -1 });
+    // スマホは画面のボタンで操作が分かるので、操作説明は PC だけ
+    if (!touch) jpText(this, cx, 392, '←→ 移動　Z ジャンプ　X 反転　R やり直し', 18);
+
+    this.add.sprite(cx + 240, GROUND_Y, 'pinkIdle', 0).setOrigin(0.5, 1).setScale(3).play('pinkIdle');
     let done = false;
     const startGame = () => {
       if (done) return;

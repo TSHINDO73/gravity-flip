@@ -21,6 +21,12 @@ export class BootScene extends Phaser.Scene {
     for (const [key, { sheet, repeat }] of Object.entries(ANIMS)) {
       this.anims.create({ key, frames: this.anims.generateFrameNumbers(sheet), frameRate: ANIM_FPS, repeat });
     }
+    // 日本語フォントの読み込みを待ってから最初の画面を描く(待たないと別のフォントで描かれたままになる)
+    const next = () => this.startFirstScene();
+    document.fonts.load('16px DotGothic16').then(next, next);
+  }
+
+  startFirstScene() {
     const n = Number(new URLSearchParams(window.location.search).get('stage'));
     if (Number.isInteger(n) && n >= 1 && n <= LEVELS.length) {
       this.scene.start('GameScene', { stage: n - 1 });
