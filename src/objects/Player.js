@@ -1,21 +1,23 @@
-﻿import { GRAVITY, RUN_SPEED, MAX_FALL_SPEED, JUMP_CUT, SCALE } from '../config.js';
-import { IMG, FRAMES, CHAR_SRC, SFX } from '../assetKeys.js';
+﻿import { GRAVITY, RUN_SPEED, MAX_FALL_SPEED, JUMP_CUT, SCALE, BUFFER_MS } from '../config.js';
+import { CHAR_SRC, SFX } from '../assetKeys.js';
 import { shiftBodyToFeet } from './gravityBody.js';
 import { playSfx } from './sfx.js';
 import { createFlipState, canFlip, applyFlip, onLand } from '../logic/flipRules.js';
 import { landingImpact } from '../logic/fxRules.js';
 import { createJumpState, markGrounded, markPressed, shouldJump, consumeJump, onFlip, jumpVelocityY } from '../logic/jumpRules.js';
 
-// 当たり判定（元画像ピクセル）。足元側に寄せる。
-const BODY_W = 12;
-const BODY_H = 16;
+// 当たり判定（元画像ピクセル）。絵（幅 22・高さ 29 ほど）に合わせて、足元側に寄せる。
+const BODY_W = 10;
+const BODY_H = 26;
 const BODY_OFF_X = (CHAR_SRC - BODY_W) / 2;
 const OFF_Y_DOWN = CHAR_SRC - BODY_H; // 重力が下: 体は画像の下側
 const OFF_Y_UP = 0; // 重力が上: 体は画像の上側
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, x, y) {
-    super(scene, x, y, IMG.chars, FRAMES.player);
+  // bufferMs: ジャンプの先行入力の猶予(スマホは長め)
+  constructor(scene, x, y, { bufferMs = BUFFER_MS } = {}) {
+    super(scene, x, y, 'pinkIdle', 0);
+    this.bufferMs = bufferMs;
     scene.add.existing(this);
     scene.physics.add.existing(this);
     this.setScale(SCALE);
@@ -24,19 +26,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.body.setOffset(BODY_OFF_X, OFF_Y_DOWN);
     this.setMaxVelocity(RUN_SPEED, MAX_FALL_SPEED);
 
-    if (!scene.anims.exists('player-walk')) {
-      scene.anims.create({
-        key: 'player-walk',
-        frames: FRAMES.playerWalk.map((f) => ({ key: IMG.chars, frame: f })),
-        frameRate: 8,
-        repeat: -1,
-      });
-    }
-
     // 見た目は別のスプライトに写す。体の拡大率を変えると当たり判定まで変わるため、
     // 伸び縮みの演出は view にだけかける(squash は Effects がトゥイーンする)
     this.setVisible(false);
-    this.view = scene.add.sprite(x, y, IMG.chars, FRAMES.player).setScale(SCALE);
+    // 旗やゴールの絵より手前に描く(演出は 50 なのでさらにその奥)
+    this.view = scene.add.sprite(x, y, 'pinkIdle', 0).setScale(SCALE).setDepth(10);
+    this.view.play('pinkIdle');
     this.squash = { x: 1, y: 1 };
     // 物理の計算が終わった後に写す。死亡中など update が呼ばれないフレームも含む
     scene.events.on(Phaser.Scenes.Events.POST_UPDATE, this.syncView, this);
@@ -50,7 +45,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   syncView() {
     const { view } = this;
     view.setPosition(this.x, this.y);
-    view.setFrame(this.frame.name);
     view.setFlip(this.flipX, this.flipY);
     view.setAlpha(this.alpha);
     if (this.isTinted) view.setTint(this.tintTopLeft);
@@ -107,7 +101,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // ジャンプ（先行入力・コヨーテ付き）
     if (input.jumpPressed) this.jumpState = markPressed(this.jumpState, time);
-    if (shouldJump(this.jumpState, time, onGround)) {
+    if (shouldJump(this.jumpState, time, onGround, this.bufferMs)) {
       this.setVelocityY(jumpVelocityY(dir));
       this.jumpState = consumeJump(this.jumpState);
       playSfx(this.scene, SFX.jump);
@@ -136,13 +130,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.flipState.airFlipAvailable) this.clearTint();
     else this.setTint(0x888888);
 
-    // 歩きアニメ
-    if (onGround && vx !== 0) this.anims.play('player-walk', true);
-    else {
-      this.anims.stop();
-      this.setFrame(FRAMES.player);
-    }
+    // アニメ: 接地中は走り/待機、空中は足元から離れる向きならジャンプ、足元へ向かうなら落下
+    let anim = 'pinkIdle';
+    if (onGround) anim = vx !== 0 ? 'pinkRun' : 'pinkIdle';
+    else anim = body.velocity.y * dir < 0 ? 'pinkJump' : 'pinkFall';
+    this.view.play(anim, true);
     this.lastVy = body.velocity.y;
+  }
+
+  // ミスしたときのアニメ。死亡中は update が呼ばれないので GameScene から呼ぶ
+  playHit() {
+    this.view.play('pinkHit', true);
   }
 
   // 体のオフセットを足元側へ移し替える。

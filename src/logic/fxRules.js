@@ -1,5 +1,7 @@
+import { LENGTH_SCALE } from '../config.js';
+
 // この勢い(px/秒)未満の着地では砂ぼこりを出さない。1マス程度の段差では出ない値
-export const LAND_DUST_MIN_SPEED = 350;
+export const LAND_DUST_MIN_SPEED = 350 * LENGTH_SCALE;
 
 const SQUASH = {
   jump: { x: 0.85, y: 1.15 },

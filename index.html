@@ -9,6 +9,8 @@
     margin: 0; height: 100%; background: #111; overflow: hidden;
     touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
   }
+  /* 日本語の案内文用。使う文字だけにサブセット化したもの(tools/import-assets.py で作る) */
+  @font-face { font-family: 'DotGothic16'; src: url('assets/fonts/dotgothic16-subset.woff') format('woff'); }
   #rotate { display: none; }
   @media (orientation: portrait) and (pointer: coarse) {
     #rotate {

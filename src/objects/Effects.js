@@ -1,15 +1,19 @@
 import { shouldDust, squashScale, shakeIntensity } from '../logic/fxRules.js';
+import { LENGTH_SCALE, SCALE } from '../config.js';
 
 // 演出の値はここにまとめる（控えめ・短めが方針）
 const DEPTH = 50;
 const DOT = 'fx-dot';
 const SQUASH_MS = 120;
-const DUST = { count: 4, lifespan: 300, speed: { min: 40, max: 90 }, gravity: 300, tint: 0xdddddd };
-const RING = { from: 10, to: 40, alpha: 0.6, ms: 250, width: 2 };
-const COIN = { count: 6, lifespan: 300, speed: { min: 60, max: 120 }, tint: 0xffe066 };
-const STOMP = { shakeMs: 80, shake: 0.004, count: 6, lifespan: 300, speed: { min: 60, max: 140 } };
-const DEATH = { shakeMs: 150, shake: 0.006, count: 10, lifespan: 400, speed: { min: 80, max: 180 }, tint: 0xff8080 };
-const GOAL = { count: 20, lifespan: 600, speed: { min: 120, max: 260 }, colors: [0xff6b6b, 0xffe066, 0x6bff9e, 0x6bc8ff, 0xd06bff] };
+// 長さ(px)の値は 1 マス 36px 時代の値に LENGTH_SCALE を掛けて、マス単位の大きさを保つ
+const L = (v) => v * LENGTH_SCALE;
+const range = (min, max) => ({ min: L(min), max: L(max) });
+const DUST = { count: 4, lifespan: 300, speed: range(40, 90), gravity: L(300) };
+const RING = { from: L(10), to: L(40), alpha: 0.6, ms: 250, width: 2 };
+const COIN = { count: 6, lifespan: 300, speed: range(60, 120), tint: 0xffe066 };
+const STOMP = { shakeMs: 80, shake: 0.004, count: 6, lifespan: 300, speed: range(60, 140) };
+const DEATH = { shakeMs: 150, shake: 0.006, count: 10, lifespan: 400, speed: range(80, 180), tint: 0xff8080 };
+const GOAL = { count: 20, lifespan: 600, speed: range(120, 260), gravity: L(300) };
 
 // 演出係。シーンごとに作る
 export class Effects {
@@ -46,7 +50,8 @@ export class Effects {
         speed: DUST.speed,
         angle,
         gravityY: DUST.gravity * dir,
-        tint: DUST.tint,
+        texture: 'dust',
+        scale: { start: SCALE, end: SCALE * 0.4 },
       });
     }
   }
@@ -81,7 +86,11 @@ export class Effects {
 
   // 上向きに舞って、ゆっくり落ちる
   goal(x, y) {
-    this.burst(x, y, { count: GOAL.count, lifespan: GOAL.lifespan, speed: GOAL.speed, angle: { min: 240, max: 300 }, gravityY: 300, tint: GOAL.colors });
+    // 紙吹雪は素材の 6 色のコマから選ぶ。1 コマが 16px の正方形なので小さく縮めて紙片にする
+    this.burst(x, y, {
+      count: GOAL.count, lifespan: GOAL.lifespan, speed: GOAL.speed, angle: { min: 240, max: 300 }, gravityY: GOAL.gravity,
+      texture: 'confetti', frame: [0, 1, 2, 3, 4, 5], scale: { start: 0.4, end: 0.25 },
+    });
   }
 
   shake(ms, base) {
@@ -98,14 +107,15 @@ export class Effects {
   }
 
   // 粒を一度だけ出して、寿命が来たら片付ける
-  burst(x, y, { count, lifespan, speed, angle = { min: 0, max: 360 }, gravityY = 0, tint = 0xffffff }) {
-    const emitter = this.scene.add.particles(x, y, DOT, {
+  burst(x, y, { count, lifespan, speed, angle = { min: 0, max: 360 }, gravityY = 0, tint = 0xffffff, texture = DOT, frame, scale = { start: 1, end: 0.3 } }) {
+    const emitter = this.scene.add.particles(x, y, texture, {
+      ...(frame ? { frame } : {}),
       speed,
       angle,
       lifespan,
       gravityY,
       tint,
-      scale: { start: 1, end: 0.3 },
+      scale,
       alpha: { start: 1, end: 0 },
       emitting: false,
     });
