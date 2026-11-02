@@ -4,6 +4,8 @@
 
 ## 操作
 
+遊ぶ人向けの図解つき説明書は [manual.html](https://tshindo73.github.io/gravity-flip/manual.html) です（スマホ向け）。
+
 | キー | 動作 |
 | --- | --- |
 | ← → | 移動 |
