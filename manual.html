@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gravity Flip 操作説明書</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Maru+Gothic:wght@500;700&display=swap">
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; }
+img { max-width: 100%; }
+/* Layout: スマホ縦持ちの1カラム。各章はゲームのHUDパネル風の見出し＋本文、図はゲーム画面そのものの色で描く */
+:root {
+  --bg: #eef3fb;
+  --surface: #ffffff;
+  --ink: #1b1b38;
+  --muted: #565a7a;
+  --line: #c9d2e6;
+  --accent: #e8386a;
+  --accent-ink: #ffffff;
+  --navy: #181830;
+  --navy-ink: #ffffff;
+  --chip: #e3e9f6;
+  /* ゲーム画面の色（図の中だけで使う。テーマで変えない） */
+  --g-sky: #5fb3f0;
+  --g-ground: #c27d5c;
+  --g-grass: #6cb33d;
+  --g-btn: #23234a;
+  --g-btn-ink: #ffffff;
+  --g-hud: #181830;
+  --font-display: "DotGothic16", "MS Gothic", monospace;
+  --font-body: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12122a; --surface: #1d1d3c; --ink: #eceefa; --muted: #a9acc9; --line: #34345e;
+    --accent: #ff5f8a; --accent-ink: #1b0b12; --navy: #2a2a52; --navy-ink: #ffffff; --chip: #2a2a4c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12122a; --surface: #1d1d3c; --ink: #eceefa; --muted: #a9acc9; --line: #34345e;
+  --accent: #ff5f8a; --accent-ink: #1b0b12; --navy: #2a2a52; --navy-ink: #ffffff; --chip: #2a2a4c;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.75;
+  font-weight: 500;
+}
+.wrap {
+  max-width: 640px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+img.px { image-rendering: pixelated; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; text-wrap: balance; margin: 0; line-height: 1.3; }
+p { margin: 0; }
+strong { color: var(--accent); font-weight: 700; }
+
+/* 表紙 */
+.hero {
+  background: var(--g-sky);
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  color: #ffffff;
+  padding: 28px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.hero .eyebrow { font-family: var(--font-display); font-size: 13px; letter-spacing: .12em; text-shadow: 0 2px 0 rgba(0,0,0,.25); }
+.hero h1 { font-size: clamp(40px, 12vw, 64px); letter-spacing: .04em; text-shadow: 0 4px 0 #1b1b38; }
+.hero p { font-weight: 700; text-shadow: 0 1px 0 rgba(0,0,0,.3); max-width: 26em; }
+.hero .stage {
+  margin-top: 10px;
+  height: 92px;
+  position: relative;
+  border-top: 10px solid var(--g-grass);
+  background: var(--g-ground);
+}
+.hero .stage img { position: absolute; width: 64px; height: 64px; }
+.hero .stage .p1 { left: auto; right: 14%; top: -74px; }
+.play {
+  align-self: flex-start;
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--accent); color: var(--accent-ink);
+  font-family: var(--font-display); font-size: 18px;
+  text-decoration: none; padding: 10px 18px; border-radius: 10px;
+  box-shadow: 0 4px 0 rgba(0,0,0,.25);
+}
+.play:focus-visible, a:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+/* 目次 */
+.toc { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 0; list-style: none; }
+.toc a {
+  display: block; padding: 6px 12px; border-radius: 999px;
+  background: var(--chip); color: var(--ink); text-decoration: none; font-size: 14px; font-weight: 700;
+}
+
+/* 章 */
+section { display: flex; flex-direction: column; gap: 14px; scroll-margin-top: 16px; }
+section > h2 {
+  align-self: flex-start;
+  background: var(--navy); color: var(--navy-ink);
+  font-size: 20px; padding: 6px 14px; border-radius: 6px;
+  border: 2px solid var(--navy-ink);
+  box-shadow: 0 0 0 2px var(--navy);
+}
+.lead { color: var(--muted); }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.figure { overflow-x: auto; }
+.figure svg { display: block; width: 100%; height: auto; }
+.caption { font-size: 13px; color: var(--muted); }
+
+/* ボタン一覧 */
+.btnlist { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.btnlist li { display: grid; grid-template-columns: 48px 1fr; gap: 12px; align-items: center; }
+.btnlist .ic {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--g-btn); color: var(--g-btn-ink);
+  display: grid; place-items: center; font-size: 18px; font-weight: 700;
+  font-family: var(--font-display);
+}
+.btnlist b { display: block; }
+.btnlist span { color: var(--muted); font-size: 14px; }
+
+/* キー表 */
+table { width: 100%; border-collapse: collapse; }
+td { padding: 10px 4px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tr:last-child td { border-bottom: 0; }
+td:first-child { width: 46%; }
+kbd {
+  display: inline-block; min-width: 1.8em; text-align: center;
+  font-family: var(--font-display); font-size: 15px;
+  padding: 2px 8px; margin: 2px 2px 2px 0;
+  border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 6px;
+  background: var(--surface); color: var(--ink);
+}
+
+/* 反転の図 */
+.flipfig { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.panel {
+  border-radius: 10px; overflow: hidden; position: relative;
+  background: var(--g-sky); height: 150px;
+  border-top: 14px solid var(--g-grass); border-bottom: 14px solid var(--g-grass);
+}
+.panel img { position: absolute; left: 50%; width: 56px; height: 56px; margin-left: -28px; }
+.panel .down { bottom: 0; }
+.panel .up { top: 0; transform: scaleY(-1); }
+.panel .gray { filter: grayscale(1) brightness(.85); }
+.panel .arrow {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  font-family: var(--font-display); color: #ffffff; font-size: 30px; text-shadow: 0 2px 0 #1b1b38;
+}
+.panel .tag {
+  position: absolute; left: 8px; top: 6px;
+  font-size: 12px; font-weight: 700; color: #1b1b38;
+  background: rgba(255,255,255,.85); padding: 0 6px; border-radius: 4px;
+}
+.panel .up ~ .tag { top: auto; bottom: 6px; }
+.flipfig p { grid-column: 1 / -1; }
+
+/* 画面の見かた */
+.shot { position: relative; border-radius: 10px; overflow: hidden; }
+.shot img { display: block; width: 100%; height: auto; }
+.pin {
+  position: absolute; transform: translate(-50%, -50%);
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--accent); color: var(--accent-ink);
+  display: grid; place-items: center;
+  font-family: var(--font-display); font-size: 14px;
+  box-shadow: 0 0 0 2px #ffffff;
+}
+.legend { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.legend li { display: grid; grid-template-columns: 28px 1fr; gap: 8px; align-items: start; }
+.legend .num {
+  width: 24px; height: 24px; border-radius: 50%; margin-top: 2px;
+  background: var(--accent); color: var(--accent-ink);
+  display: grid; place-items: center; font-family: var(--font-display); font-size: 14px;
+}
+
+/* 登場するもの */
+.things { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.thing {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+  padding: 12px; display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: center;
+}
+.thing .sp {
+  width: 64px; height: 64px; border-radius: 8px; background: var(--g-sky);
+  display: grid; place-items: center; overflow: hidden;
+}
+.thing .sp img { width: 56px; height: 56px; }
+.thing .sp img.small { width: 40px; height: 40px; }
+.thing h3 { font-size: 17px; }
+.thing p { font-size: 14px; color: var(--muted); }
+.thing .verdict { display: inline-block; font-size: 12px; font-weight: 700; padding: 0 8px; border-radius: 4px; margin-left: 6px; vertical-align: 2px; }
+.ok { background: var(--g-grass); color: #ffffff; }
+.ng { background: var(--accent); color: var(--accent-ink); }
+
+/* 手順 */
+.steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; counter-reset: s; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 32px 1fr; gap: 10px; }
+.steps li::before {
+  content: counter(s); width: 28px; height: 28px; border-radius: 6px;
+  background: var(--navy); color: var(--navy-ink);
+  display: grid; place-items: center; font-family: var(--font-display);
+}
+.tips { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; }
+.note { font-size: 14px; color: var(--muted); }
+footer { font-size: 12px; color: var(--muted); text-align: center; }
+
+@media (min-width: 560px) {
+  .things { grid-template-columns: 1fr 1fr; }
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">操作説明書</div>
+    <h1>GRAVITY FLIP</h1>
+    <p>重力を上下にひっくり返しながら、ゴールのトロフィーを目指す2Dアクションゲームです。全3ステージ。</p>
+    <a class="play" href="./">▶ 遊ぶ</a>
+    <div class="stage">
+      <img class="px p1" src="assets/manual/pink.png" alt="">
+    </div>
+  </header>
+
+  <nav aria-label="目次">
+    <ul class="toc">
+      <li><a href="#phone">スマホの操作</a></li>
+      <li><a href="#pc">パソコンの操作</a></li>
+      <li><a href="#flip">重力反転</a></li>
+      <li><a href="#screen">画面の見かた</a></li>
+      <li><a href="#things">登場するもの</a></li>
+      <li><a href="#miss">ミスしたら</a></li>
+      <li><a href="#clear">クリアと記録</a></li>
+      <li><a href="#tips">コツ</a></li>
+    </ul>
+  </nav>
+
+  <section id="phone">
+    <h2>スマホの操作</h2>
+    <p>スマホは<strong>横向き</strong>で遊びます。縦向きのときは「横にしてね」の案内が出ます。タイトル画面をタップするとスタートし、画面いっぱいの表示に切り替わります。</p>
+    <div class="card">
+      <div class="figure">
+        <svg viewBox="0 0 1360 620" role="img" aria-label="横向きのスマホ画面。左の列に左右の移動ボタン、右の列に上からやり直し・反転・ジャンプのボタンがある">
+          <rect x="0" y="0" width="1360" height="620" rx="64" fill="#0d0d1c"/>
+          <rect x="40" y="40" width="1280" height="540" rx="18" fill="var(--g-hud)"/>
+          <!-- プレイ画面 -->
+          <rect x="200" y="100" width="960" height="480" fill="var(--g-sky)"/>
+          <rect x="200" y="508" width="960" height="72" fill="var(--g-ground)"/>
+          <rect x="200" y="500" width="960" height="14" fill="var(--g-grass)"/>
+          <image href="assets/manual/pink.png" x="560" y="436" width="64" height="64" style="image-rendering:pixelated"/>
+          <image href="assets/manual/apple.png" x="760" y="380" width="56" height="56" style="image-rendering:pixelated"/>
+          <!-- HUD -->
+          <g fill="none" stroke="#ffffff" stroke-width="3">
+            <rect x="216" y="52" width="170" height="38"/>
+            <rect x="560" y="52" width="240" height="38"/>
+            <rect x="960" y="52" width="184" height="38"/>
+          </g>
+          <!-- ボタン（ゲームと同じ位置。ゲーム座標 + 40） -->
+          <g fill="var(--g-btn)" stroke="#ffffff" stroke-width="3">
+            <circle cx="82" cy="470" r="36"/>
+            <circle cx="158" cy="470" r="36"/>
+            <circle cx="1240" cy="70" r="26"/>
+            <circle cx="1240" cy="370" r="40"/>
+            <circle cx="1240" cy="480" r="46"/>
+          </g>
+          <g fill="#ffffff" font-family="DotGothic16, monospace" text-anchor="middle" dominant-baseline="central">
+            <text x="82" y="470" font-size="34">◀</text>
+            <text x="158" y="470" font-size="34">▶</text>
+            <text x="1240" y="71" font-size="30">↻</text>
+            <text x="1240" y="370" font-size="34">⇅</text>
+            <text x="1240" y="480" font-size="38">▲</text>
+          </g>
+          <!-- 名札 -->
+          <g font-family="Zen Maru Gothic, sans-serif" font-weight="700" font-size="34">
+            <g fill="var(--accent)">
+              <rect x="56" y="372" width="128" height="50" rx="10"/>
+              <rect x="1165" y="104" width="150" height="50" rx="10"/>
+              <rect x="1060" y="345" width="120" height="50" rx="10"/>
+              <rect x="1020" y="455" width="160" height="50" rx="10"/>
+            </g>
+            <g fill="#ffffff" text-anchor="middle" dominant-baseline="central">
+              <text x="120" y="397">移動</text>
+              <text x="1240" y="129">やり直し</text>
+              <text x="1120" y="370">反転</text>
+              <text x="1100" y="480">ジャンプ</text>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <ul class="btnlist">
+        <li><div class="ic">◀▶</div><div><b>移動（左の列）</b><span>押している間、左右に走ります。</span></div></li>
+        <li><div class="ic">▲</div><div><b>ジャンプ（右下）</b><span>軽くタップしても一番高く跳びます。</span></div></li>
+        <li><div class="ic">⇅</div><div><b>重力反転（右の真ん中）</b><span>重力の向きが上下入れかわります。</span></div></li>
+        <li><div class="ic">↻</div><div><b>やり直し（右上）</b><span>今のステージを最初からやり直します。</span></div></li>
+      </ul>
+      <p class="note">左手の親指で移動、右手の親指でジャンプと反転を押すと遊びやすいです。ボタンは絵より少し広い範囲まで反応します。</p>
+    </div>
+  </section>
+
+  <section id="pc">
+    <h2>パソコンの操作</h2>
+    <div class="card">
+      <table>
+        <tbody>
+          <tr><td><kbd>←</kbd><kbd>→</kbd></td><td>移動</td></tr>
+          <tr><td><kbd>Z</kbd> か <kbd>スペース</kbd></td><td>ジャンプ（長く押すほど高く跳ぶ）</td></tr>
+          <tr><td><kbd>X</kbd> か <kbd>↑</kbd></td><td>重力反転</td></tr>
+          <tr><td><kbd>R</kbd></td><td>ステージをやり直す</td></tr>
+          <tr><td><kbd>Enter</kbd></td><td>タイトル・クリア画面で次へ</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="flip">
+    <h2>重力反転のしくみ</h2>
+    <p>反転すると、天井が床になります。キャラクターは天井に向かって「落ちて」いき、天井の上を歩けます。</p>
+    <div class="flipfig">
+      <div class="panel">
+        <span class="tag">ふつう</span>
+        <img class="px down" src="assets/manual/pink.png" alt="床に立つキャラクター">
+        <span class="arrow">↓</span>
+      </div>
+      <div class="panel">
+        <img class="px up" src="assets/manual/pink.png" alt="天井に逆さに立つキャラクター">
+        <span class="tag">反転中</span>
+        <span class="arrow">↑</span>
+      </div>
+    </div>
+    <div class="card">
+      <ul class="tips">
+        <li><b>地面にいるとき</b>は、何度でも反転できます。</li>
+        <li><b>空中では1回だけ</b>反転できます。使うとキャラクターが<b>灰色</b>になり、床か天井に着くと元の色に戻って、また使えるようになります。</li>
+        <li><strong>敵も一緒に反転します。</strong>反転した瞬間、敵も天井や床へ移動するので気をつけましょう。</li>
+      </ul>
+      <div class="flipfig" aria-hidden="true">
+        <div class="panel" style="height:110px">
+          <span class="tag">空中反転できる</span>
+          <img class="px" style="top:28px" src="assets/manual/pink.png" alt="">
+        </div>
+        <div class="panel" style="height:110px">
+          <span class="tag">使い切った（灰色）</span>
+          <img class="px gray" style="top:28px" src="assets/manual/pink.png" alt="">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen">
+    <h2>画面の見かた</h2>
+    <div class="card">
+      <div class="shot">
+        <img src="assets/manual/screen.jpg" alt="ステージ1のゲーム画面">
+        <span class="pin" style="left:4%;top:5.6%">1</span>
+        <span class="pin" style="left:37.5%;top:5.6%">2</span>
+        <span class="pin" style="left:77.5%;top:5.6%">3</span>
+        <span class="pin" style="left:8.5%;top:72%">4</span>
+      </div>
+      <ul class="legend">
+        <li><span class="num">1</span><span>集めたりんごの数</span></li>
+        <li><span class="num">2</span><span>今のステージ（1〜3）</span></li>
+        <li><span class="num">3</span><span>スタートからの合計タイム</span></li>
+        <li><span class="num">4</span><span>あなたのキャラクター</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="things">
+    <h2>登場するもの</h2>
+    <div class="things">
+      <div class="thing">
+        <div class="sp"><img class="px" src="assets/manual/apple.png" alt=""></div>
+        <div><h3>りんご<span class="verdict ok">取る</span></h3><p>触ると取れます。取った数がクリア画面に出ます。</p></div>
+      </div>
+      <div class="thing">
+        <div class="sp"><img class="px" src="assets/manual/enemy.png" alt=""></div>
+        <div><h3>敵<span class="verdict ok">踏む</span></h3><p>上から踏むと倒せます。横や下からぶつかるとミスです。</p></div>
+      </div>
+      <div class="thing">
+        <div class="sp"><img class="px small" src="assets/manual/spike.png" alt=""></div>
+        <div><h3>トゲ<span class="verdict ng">さける</span></h3><p>床にも天井にもあります。触るとミスです。</p></div>
+      </div>
+      <div class="thing">
+        <div class="sp"><img class="px" src="assets/manual/flag.png" alt=""></div>
+        <div><h3>中間の旗<span class="verdict ok">触る</span></h3><p>触ると旗が立ち、ミスしてもここから再開できます。</p></div>
+      </div>
+      <div class="thing">
+        <div class="sp"><img class="px" src="assets/manual/goal.png" alt=""></div>
+        <div><h3>トロフィー<span class="verdict ok">ゴール</span></h3><p>触るとステージクリア。次のステージへ進みます。</p></div>
+      </div>
+      <div class="thing">
+        <div class="sp" style="background:var(--g-hud)"><span style="font-family:var(--font-display);color:#ffffff;font-size:22px">↓↓</span></div>
+        <div><h3>画面の外<span class="verdict ng">落ちない</span></h3><p>穴から下（反転中は上）へ飛び出すとミスです。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="miss">
+    <h2>ミスしたら</h2>
+    <div class="card">
+      <p>残り回数はありません。<strong>何度でも挑戦できます。</strong></p>
+      <ul class="tips">
+        <li>最後に触った<b>中間の旗</b>から再開します。旗に触っていなければステージの最初からです。</li>
+        <li>再開すると、重力はふつう（下向き）に戻ります。</li>
+        <li>タイムは止まりません。ミスが少ないほど良い記録になります。</li>
+        <li><b>やり直し</b>（スマホは ↻、パソコンは <kbd>R</kbd>）を押すと、ステージの最初に戻ります。このステージで取ったりんごも元に戻ります。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="clear">
+    <h2>クリアと記録</h2>
+    <ol class="steps">
+      <li><span>ステージ1から3まで、順番にトロフィーを目指します。</span></li>
+      <li><span>3つ目のトロフィーに触ると<b>CLEAR!</b>。合計タイムとりんごの数が出ます。</span></li>
+      <li><span>今までより速ければ <strong>NEW!</strong> と出て、タイトル画面に <b>BEST</b> として残ります。</span></li>
+    </ol>
+    <p class="note">記録は遊んでいるブラウザの中だけに保存されます。ほかの人の記録とは混ざりません。</p>
+  </section>
+
+  <section id="tips">
+    <h2>コツ</h2>
+    <div class="card">
+      <ul class="tips">
+        <li>穴は、反転して<b>天井を歩けば</b>越えられることがあります。</li>
+        <li>空中で反転を使ったら、着地するまでもう反転できません。<b>灰色のときは慎重に。</b></li>
+        <li>天井を歩いているときは、敵を<b>下から</b>（あなたにとっての「上」から）踏みます。</li>
+        <li>反転すると敵も動きます。敵の近くで反転するときは、敵がどこへ行くか考えてから押しましょう。</li>
+        <li>天井にもりんごがあります。反転して取りに行きましょう。</li>
+      </ul>
+    </div>
+  </section>
+
+  <a class="play" href="./" style="align-self:center">▶ Gravity Flip で遊ぶ</a>
+
+  <footer>絵: Pixel Adventure 1（Pixel Frog）／ 音: Kenney ／ 文字: DotGothic16（Fontworks）</footer>
+</div>
+</body>
+</html>
