@@ -1,4 +1,4 @@
-﻿import { layoutFor } from './config.js';
+﻿import { layoutFor, GAME_PARENT } from './config.js';
 import { isTouchDevice } from './objects/TouchPad.js';
 import { BootScene } from './scenes/BootScene.js';
 import { TitleScene } from './scenes/TitleScene.js';
@@ -18,6 +18,7 @@ const game = new Phaser.Game({
   pixelArt: true,
   backgroundColor: '#181830',
   scale: {
+    parent: GAME_PARENT,
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },

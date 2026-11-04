@@ -1,4 +1,8 @@
 ﻿// 画面の構成。HUD の帯（高さ 60）とプレイ画面（960x480）。タッチ端末は左右に 160px のボタンの列
+// ゲームを入れる箱の id(index.html)。iOS の Safari で body を親にすると、
+// Phaser が高さをバーの分だけ大きく測って画面からはみ出す
+export const GAME_PARENT = 'game';
+
 export const HUD_H = 60;
 export const PLAY_W = 960;
 export const PLAY_H = 480;

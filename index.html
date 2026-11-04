@@ -11,6 +11,8 @@
   }
   /* 日本語の案内文用。使う文字だけにサブセット化したもの(tools/import-assets.py で作る) */
   @font-face { font-family: 'DotGothic16'; src: url('assets/fonts/dotgothic16-subset.woff') format('woff'); }
+  /* ゲームの箱。画面に固定するので、Safari のタブやアドレスバーが出ていても見えている範囲に収まる */
+  #game { position: fixed; inset: 0; }
   #rotate { display: none; }
   @media (orientation: portrait) and (pointer: coarse) {
     #rotate {
@@ -21,6 +23,7 @@
 </style>
 </head>
 <body>
+<div id="game"></div>
 <div id="rotate">📱 スマホを横向きにしてください</div>
 <script src="lib/phaser.min.js"></script>
 <script type="module" src="src/main.js"></script>
