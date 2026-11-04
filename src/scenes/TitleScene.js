@@ -1,5 +1,5 @@
 import { formatTime } from '../logic/format.js';
-import { loadBest, scoreMs } from '../logic/records.js';
+import { loadBest, scorePoints } from '../logic/records.js';
 import { freshRun } from '../logic/runRules.js';
 import { isTouchDevice } from '../objects/TouchPad.js';
 import { Background, STAGE_SKIES } from '../objects/Background.js';
@@ -27,7 +27,7 @@ export class TitleScene extends Phaser.Scene {
     const best = loadBest();
     if (best) {
       panel(this, cx - 250, 262, 500, 46);
-      pixelText(this, cx - 232, 271, `BEST ${formatTime(scoreMs(best))}`);
+      pixelText(this, cx - 232, 271, `BEST ${scorePoints(best)}`);
       pixelText(this, cx + 70, 279, formatTime(best.timeMs), 2, { tint: BEST_GRAY });
       this.add.image(cx + 180, 286, 'apple', 0);
       pixelText(this, cx + 192, 279, `X${best.coins}`, 2, { tint: BEST_GRAY });

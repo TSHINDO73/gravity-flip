@@ -1,5 +1,5 @@
 import { formatTime } from '../logic/format.js';
-import { loadBest, saveBest, mergeBest, scoreMs } from '../logic/records.js';
+import { loadBest, saveBest, mergeBest, scorePoints } from '../logic/records.js';
 import { isTouchDevice } from '../objects/TouchPad.js';
 import { Background, STAGE_SKIES } from '../objects/Background.js';
 import { pixelText, jpText, panel, clockIcon, groundStrip } from '../ui/pixelText.js';
@@ -22,7 +22,7 @@ export class ClearScene extends Phaser.Scene {
     panel(this, cx - 260, 60, 520, 370);
     pixelText(this, cx, 88, 'CLEAR!', 7, { shadow: true, originX: 0.5 });
 
-    // 1 行目: リンゴの数、2 行目: タイム、3 行目: 点数(タイム - りんご 1 個につき 1 秒)
+    // 1 行目: リンゴの数、2 行目: タイム、3 行目: 点数
     const run = { timeMs: elapsedMs, coins };
     this.add.image(cx - 180, 192, 'apple', 0).setScale(2);
     pixelText(this, cx - 140, 172, `X${coins}`, 4);
@@ -30,7 +30,7 @@ export class ClearScene extends Phaser.Scene {
     pixelText(this, cx - 140, 228, formatTime(elapsedMs), 4);
     this.add.rectangle(cx, 284, 440, 3, 0xffffff).setAlpha(0.5);
     pixelText(this, cx - 232, 310, 'SCORE', 2);
-    pixelText(this, cx - 140, 296, formatTime(scoreMs(run)), 4);
+    pixelText(this, cx - 140, 296, String(scorePoints(run)), 4);
 
     // 通しプレイだけ記録を比べる。点数が良ければ NEW!、そうでなければ前回までのベストの組
     if (fullRun) {
@@ -40,7 +40,7 @@ export class ClearScene extends Phaser.Scene {
         this.add.rectangle(cx + 100, 296, 130, 42, NEW_PINK).setOrigin(0).setStrokeStyle(3, 0xffffff);
         pixelText(this, cx + 165, 302, 'NEW!', 3, { originX: 0.5 });
       } else {
-        pixelText(this, cx, 350, `BEST ${formatTime(scoreMs(best))} (${formatTime(best.timeMs)} X${best.coins})`, 2, { tint: BEST_GRAY, originX: 0.5 });
+        pixelText(this, cx, 350, `BEST ${scorePoints(best)} (${formatTime(best.timeMs)} X${best.coins})`, 2, { tint: BEST_GRAY, originX: 0.5 });
       }
     }
 
