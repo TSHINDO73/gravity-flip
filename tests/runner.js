@@ -33,12 +33,13 @@ export function assertThrows(fn, messagePart) {
   }
 }
 
-export function run() {
+// fetch などを使うテストのために、Promise を返すテストは終わるまで待つ
+export async function run() {
   let passed = 0;
   const failures = [];
   for (const t of tests) {
     try {
-      t.fn();
+      await t.fn();
       passed++;
     } catch (e) {
       failures.push(t.name + ': ' + e.message);

@@ -23,7 +23,7 @@ try {
     # 毎回新しいプロファイルを使い、前回のキャッシュで古いファイルを読まないようにする
     $profileDir = Join-Path $env:TEMP ('gf-edge-shot-' + [guid]::NewGuid())
     $outFull = [System.IO.Path]::GetFullPath($Out)
-    $edgeArgs = @('--headless', '--disable-gpu', "--user-data-dir=$profileDir", "--screenshot=$outFull", '--window-size=960,540', "--virtual-time-budget=$WaitMs", "http://localhost:$port/?$Query")
+    $edgeArgs = @('--headless=new', '--disable-gpu', "--user-data-dir=$profileDir", "--screenshot=$outFull", '--window-size=960,540', "--virtual-time-budget=$WaitMs", "http://localhost:$port/?$Query")
     Start-Process -FilePath $edge -ArgumentList $edgeArgs -Wait -WindowStyle Hidden
     Write-Output "saved: $outFull"
 } finally {
