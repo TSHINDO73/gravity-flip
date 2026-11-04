@@ -1,10 +1,19 @@
 import { test, assertEqual } from './runner.js';
-import { mergeBest, parseBest, loadBest, saveBest, scoreMs, APPLE_BONUS_MS } from '../src/logic/records.js';
+import { mergeBest, parseBest, loadBest, saveBest, scorePoints } from '../src/logic/records.js';
 
-test('scoreMs: タイムからりんご1個につき1秒引く', () => {
-  assertEqual(APPLE_BONUS_MS, 1000);
-  assertEqual(scoreMs({ timeMs: 80000, coins: 15 }), 65000);
-  assertEqual(scoreMs({ timeMs: 30000, coins: 35 }), -5000);
+// 点数 = 30000 - タイム(0.1 秒単位)の秒数 × 100 + りんご × 50。多いほど良い
+test('scorePoints: 持ち点からタイムで減り、りんごで増える', () => {
+  assertEqual(scorePoints({ timeMs: 80000, coins: 15 }), 22750);
+  assertEqual(scorePoints({ timeMs: 0, coins: 0 }), 30000);
+});
+
+test('scorePoints: 画面のタイムと同じ 0.1 秒単位で数える', () => {
+  // 80.099 秒は画面では 1:20.0
+  assertEqual(scorePoints({ timeMs: 80099, coins: 15 }), 22750);
+});
+
+test('scorePoints: 0 点より下にはならない', () => {
+  assertEqual(scorePoints({ timeMs: 400000, coins: 0 }), 0);
 });
 
 test('mergeBest: 初回は新記録', () => {
@@ -12,23 +21,24 @@ test('mergeBest: 初回は新記録', () => {
 });
 
 test('mergeBest: 点数が良ければその回のタイムとりんごを組で残す', () => {
-  // 前回 90.0 秒・10 個 = 80.0、今回 95.0 秒・20 個 = 75.0
-  assertEqual(mergeBest({ timeMs: 90000, coins: 10 }, { timeMs: 95000, coins: 20 }), {
-    best: { timeMs: 95000, coins: 20 },
+  // 前回 90.0 秒・10 個 = 21500 点、今回 85.0 秒・4 個 = 21700 点(りんごは前回より少ないが混ぜない)
+  assertEqual(mergeBest({ timeMs: 90000, coins: 10 }, { timeMs: 85000, coins: 4 }), {
+    best: { timeMs: 85000, coins: 4 },
     isNew: true,
   });
 });
 
-test('mergeBest: タイムが速くても点数が悪ければ前の組のまま（混ぜない）', () => {
-  // 今回 85.0 秒・2 個 = 83.0 は 80.0 より悪い
-  assertEqual(mergeBest({ timeMs: 90000, coins: 10 }, { timeMs: 85000, coins: 2 }), {
+test('mergeBest: りんごが多くても点数が悪ければ前の組のまま', () => {
+  // 今回 95.0 秒・15 個 = 21250 点は 21500 点より悪い
+  assertEqual(mergeBest({ timeMs: 90000, coins: 10 }, { timeMs: 95000, coins: 15 }), {
     best: { timeMs: 90000, coins: 10 },
     isNew: false,
   });
 });
 
 test('mergeBest: 同じ点数は前の記録を残す', () => {
-  assertEqual(mergeBest({ timeMs: 90000, coins: 10 }, { timeMs: 91000, coins: 11 }), {
+  // 91.0 秒・12 個 = 21500 点
+  assertEqual(mergeBest({ timeMs: 90000, coins: 10 }, { timeMs: 91000, coins: 12 }), {
     best: { timeMs: 90000, coins: 10 },
     isNew: false,
   });
