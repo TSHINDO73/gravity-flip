@@ -12,6 +12,7 @@ import { isTouchDevice } from '../objects/TouchPad.js';
 import { jumpVelocityY } from '../logic/jumpRules.js';
 import { playSfx } from '../objects/sfx.js';
 import { isOutOfBounds, isStomp, spikeHitbox } from '../logic/combatRules.js';
+import { freshRun } from '../logic/runRules.js';
 
 const DEATH_BLINK_MS = 500;
 
@@ -27,7 +28,6 @@ export class GameScene extends Phaser.Scene {
     this.fullRun = fullRun;
     this.coins = coins;
     this.elapsedMs = elapsedMs;
-    this.coinsAtStageStart = coins;
     this.isDead = false;
     this.reachedGoal = false;
   }
@@ -280,9 +280,9 @@ export class GameScene extends Phaser.Scene {
     this.game.events.emit('hud-update', { stage: this.stage + 1, coins: this.coins, elapsedMs: this.elapsedMs });
   }
 
-  // やり直し: コインはステージ開始時に戻すが、タイムは戻さない(経過時間をそのまま引き継ぐ)
-  restartStage() {
-    this.scene.restart({ stage: this.stage, coins: this.coinsAtStageStart, elapsedMs: this.elapsedMs, fullRun: this.fullRun });
+  // やり直し: 1-1 の最初から、タイムとりんごも 0 にして始め直す
+  restartRun() {
+    this.scene.restart(freshRun());
   }
 
   update(time, delta) {
@@ -291,7 +291,7 @@ export class GameScene extends Phaser.Scene {
     const input = this.controls.update();
     // ゴール後の画面切り替え待ちの間はやり直しを受け付けない(クリアが消えるため)
     if (!this.reachedGoal && input.restartPressed) {
-      this.restartStage();
+      this.restartRun();
       return;
     }
     const levelH = this.level.height * TILE;
