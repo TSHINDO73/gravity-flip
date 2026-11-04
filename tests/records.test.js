@@ -1,43 +1,36 @@
 import { test, assertEqual } from './runner.js';
-import { mergeBest, parseBest, loadBest, saveBest } from '../src/logic/records.js';
+import { mergeBest, parseBest, loadBest, saveBest, scoreMs, APPLE_BONUS_MS } from '../src/logic/records.js';
 
-test('mergeBest: 初回は両方とも新記録', () => {
-  assertEqual(mergeBest(null, { timeMs: 90000, coins: 10 }), {
+test('scoreMs: タイムからりんご1個につき1秒引く', () => {
+  assertEqual(APPLE_BONUS_MS, 1000);
+  assertEqual(scoreMs({ timeMs: 80000, coins: 15 }), 65000);
+  assertEqual(scoreMs({ timeMs: 30000, coins: 35 }), -5000);
+});
+
+test('mergeBest: 初回は新記録', () => {
+  assertEqual(mergeBest(null, { timeMs: 90000, coins: 0 }), { best: { timeMs: 90000, coins: 0 }, isNew: true });
+});
+
+test('mergeBest: 点数が良ければその回のタイムとりんごを組で残す', () => {
+  // 前回 90.0 秒・10 個 = 80.0、今回 95.0 秒・20 個 = 75.0
+  assertEqual(mergeBest({ timeMs: 90000, coins: 10 }, { timeMs: 95000, coins: 20 }), {
+    best: { timeMs: 95000, coins: 20 },
+    isNew: true,
+  });
+});
+
+test('mergeBest: タイムが速くても点数が悪ければ前の組のまま（混ぜない）', () => {
+  // 今回 85.0 秒・2 個 = 83.0 は 80.0 より悪い
+  assertEqual(mergeBest({ timeMs: 90000, coins: 10 }, { timeMs: 85000, coins: 2 }), {
     best: { timeMs: 90000, coins: 10 },
-    newTime: true,
-    newCoins: true,
+    isNew: false,
   });
 });
 
-test('mergeBest: 初回でもコイン0枚は新記録にしない', () => {
-  assertEqual(mergeBest(null, { timeMs: 90000, coins: 0 }), {
-    best: { timeMs: 90000, coins: 0 },
-    newTime: true,
-    newCoins: false,
-  });
-});
-
-test('mergeBest: タイムだけ更新', () => {
-  assertEqual(mergeBest({ timeMs: 90000, coins: 10 }, { timeMs: 80000, coins: 5 }), {
-    best: { timeMs: 80000, coins: 10 },
-    newTime: true,
-    newCoins: false,
-  });
-});
-
-test('mergeBest: コインだけ更新', () => {
-  assertEqual(mergeBest({ timeMs: 90000, coins: 10 }, { timeMs: 95000, coins: 12 }), {
-    best: { timeMs: 90000, coins: 12 },
-    newTime: false,
-    newCoins: true,
-  });
-});
-
-test('mergeBest: 同じ記録は更新扱いにしない', () => {
-  assertEqual(mergeBest({ timeMs: 90000, coins: 10 }, { timeMs: 90000, coins: 10 }), {
+test('mergeBest: 同じ点数は前の記録を残す', () => {
+  assertEqual(mergeBest({ timeMs: 90000, coins: 10 }, { timeMs: 91000, coins: 11 }), {
     best: { timeMs: 90000, coins: 10 },
-    newTime: false,
-    newCoins: false,
+    isNew: false,
   });
 });
 
@@ -78,6 +71,13 @@ test('saveBest / loadBest: 小数のタイムも読み戻せる', () => {
   const s = fakeStorage();
   saveBest({ timeMs: 83456.78, coins: 10 }, s);
   assertEqual(loadBest(s), { timeMs: 83456.78, coins: 10 });
+});
+
+// 前の版はタイムとりんごを別々の回から取っていたので、その記録は読まない
+test('loadBest: 前の版の記録は読まない', () => {
+  const s = fakeStorage();
+  s.setItem('gravity-flip-best', '{"timeMs":90000,"coins":10}');
+  assertEqual(loadBest(s), null);
 });
 
 test('saveBest / loadBest: 保存できない環境でも止まらない', () => {

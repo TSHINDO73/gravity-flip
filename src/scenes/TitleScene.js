@@ -1,10 +1,12 @@
 import { formatTime } from '../logic/format.js';
-import { loadBest } from '../logic/records.js';
+import { loadBest, scoreMs } from '../logic/records.js';
+import { freshRun } from '../logic/runRules.js';
 import { isTouchDevice } from '../objects/TouchPad.js';
 import { Background, STAGE_SKIES } from '../objects/Background.js';
 import { pixelText, jpText, panel, groundStrip } from '../ui/pixelText.js';
 
 const GROUND_Y = 476;
+const BEST_GRAY = 0xb4b4d2;
 
 export class TitleScene extends Phaser.Scene {
   constructor() {
@@ -21,13 +23,14 @@ export class TitleScene extends Phaser.Scene {
     pixelText(this, cx, 60, 'GRAVITY', 8, { shadow: true, originX: 0.5 });
     pixelText(this, cx, 150, 'FLIP', 8, { shadow: true, originX: 0.5 });
 
-    // ベスト記録(タイムとリンゴの数)。記録がなければ出さない
+    // ベスト記録: 点数を大きく、その回のタイムとりんごの数を小さく並べる。記録がなければ出さない
     const best = loadBest();
     if (best) {
-      panel(this, cx - 210, 262, 420, 46);
-      pixelText(this, cx - 192, 271, `BEST ${formatTime(best.timeMs)}`);
-      this.add.image(cx + 92, 285, 'apple', 0);
-      pixelText(this, cx + 112, 271, `X${best.coins}`);
+      panel(this, cx - 250, 262, 500, 46);
+      pixelText(this, cx - 232, 271, `BEST ${formatTime(scoreMs(best))}`);
+      pixelText(this, cx + 70, 279, formatTime(best.timeMs), 2, { tint: BEST_GRAY });
+      this.add.image(cx + 180, 286, 'apple', 0);
+      pixelText(this, cx + 192, 279, `X${best.coins}`, 2, { tint: BEST_GRAY });
     }
 
     const start = jpText(this, cx, 336, touch ? 'タップでスタート' : 'Z・スペース・Enter でスタート', 28);
@@ -40,7 +43,7 @@ export class TitleScene extends Phaser.Scene {
     const startGame = () => {
       if (done) return;
       done = true;
-      this.scene.start('GameScene', { stage: 0, fullRun: true });
+      this.scene.start('GameScene', freshRun());
     };
     ['keydown-Z', 'keydown-SPACE', 'keydown-ENTER'].forEach((ev) =>
       this.input.keyboard.on(ev, (e) => {
