@@ -69,9 +69,12 @@ async function postScore(request, env, cors) {
   const { status, run } = await readRun(request);
   if (status) return json({ error: status === 413 ? 'too_large' : 'bad_request' }, status, cors);
 
+  // 秘密の文字列がないと、送り元のハッシュから IP アドレスを逆算できてしまうので受け付けない
+  if (!env.IP_SALT) return json({ error: 'server' }, 500, cors);
+
   const db = env.DB;
   const now = Date.now();
-  const hash = await ipHash(request, env.IP_SALT ?? '');
+  const hash = await ipHash(request, env.IP_SALT);
   const recent = await db
     .prepare('SELECT 1 FROM scores WHERE ip_hash = ? AND created_at > ? LIMIT 1')
     .bind(hash, new Date(now - RATE_LIMIT_MS).toISOString())

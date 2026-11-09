@@ -20,6 +20,8 @@ const game = new Phaser.Game({
   backgroundColor: '#181830',
   scale: {
     parent: GAME_PARENT,
+    // 全画面はゲームの箱ごとにする(canvas だけだと、上に重ねる名前入力が見えなくなる)
+    fullscreenTarget: GAME_PARENT,
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },

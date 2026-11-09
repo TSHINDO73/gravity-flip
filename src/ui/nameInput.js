@@ -79,7 +79,12 @@ export function askName(scene, { initial = '', cancelLabel = 'おくらない' }
     // 画面が切り替わったら取り消し扱いで片付ける
     scene.events.once('shutdown', () => close(null));
 
-    document.body.append(root);
+    dialogParent().append(root);
     input.focus();
   });
+}
+
+// 全画面のときは全画面になっている要素(ゲームの箱)の中に置かないと、名前入力が見えず押せない
+export function dialogParent(doc = document) {
+  return doc.fullscreenElement ?? doc.body;
 }

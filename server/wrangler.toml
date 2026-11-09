@@ -3,6 +3,10 @@ name = "gravity-flip-scores"
 main = "src/index.js"
 compatibility_date = "2026-11-01"
 
+# 送り元や送られた内容を Cloudflare 側のログにも残さない
+[observability]
+enabled = false
+
 [[d1_databases]]
 binding = "DB"
 database_name = "gravity-flip-scores"
