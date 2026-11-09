@@ -39,7 +39,7 @@ export class TitleScene extends Phaser.Scene {
     const start = jpText(this, cx, 336, touch ? 'タップでスタート' : 'Z・スペース・Enter でスタート', 28);
     this.tweens.add({ targets: start, alpha: 0.3, duration: 700, yoyo: true, repeat: -1 });
     // スマホは画面のボタンで操作が分かるので、操作説明は PC だけ
-    if (!touch) jpText(this, cx, 392, '←→ 移動　Z ジャンプ　X 反転　R やり直し　C ランキング', 18);
+    if (!touch) jpText(this, cx, 392, '←→ 移動　Z ジャンプ　X 反転　R やり直し　Esc タイトル　C ランキング', 16);
 
     // ランキングと名前の変更。ここを押した指やクリックではゲームを始めない
     const ui = [this.makeRankingButton(cx), ...this.makeNameLabel()];

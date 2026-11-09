@@ -266,7 +266,7 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
     <p>スマホは<strong>横向き</strong>で遊びます。縦向きのときは「横にしてね」の案内が出ます。タイトル画面をタップするとスタートし、画面いっぱいの表示に切り替わります。</p>
     <div class="card">
       <div class="figure">
-        <svg viewBox="0 0 1360 620" role="img" aria-label="横向きのスマホ画面。左の列に左右の移動ボタン、右の列に上からやり直し・反転・ジャンプのボタンがある">
+        <svg viewBox="0 0 1360 620" role="img" aria-label="横向きのスマホ画面。左の列に上からタイトルへ・左右の移動ボタン、右の列に上からやり直し・反転・ジャンプのボタンがある">
           <rect x="0" y="0" width="1360" height="620" rx="64" fill="#0d0d1c"/>
           <rect x="40" y="40" width="1280" height="540" rx="18" fill="var(--g-hud)"/>
           <!-- プレイ画面 -->
@@ -286,6 +286,7 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
             <circle cx="82" cy="470" r="36"/>
             <circle cx="158" cy="470" r="36"/>
             <circle cx="1240" cy="70" r="26"/>
+            <circle cx="120" cy="70" r="26"/>
             <circle cx="1240" cy="370" r="40"/>
             <circle cx="1240" cy="480" r="46"/>
           </g>
@@ -293,6 +294,7 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
             <text x="82" y="470" font-size="34">◀</text>
             <text x="158" y="470" font-size="34">▶</text>
             <text x="1240" y="71" font-size="30">↻</text>
+            <text x="120" y="71" font-size="28">⌂</text>
             <text x="1240" y="370" font-size="34">⇅</text>
             <text x="1240" y="480" font-size="38">▲</text>
           </g>
@@ -301,12 +303,14 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
             <g fill="var(--accent)">
               <rect x="56" y="372" width="128" height="50" rx="10"/>
               <rect x="1165" y="104" width="150" height="50" rx="10"/>
+              <rect x="45" y="104" width="150" height="50" rx="10"/>
               <rect x="1060" y="345" width="120" height="50" rx="10"/>
               <rect x="1020" y="455" width="160" height="50" rx="10"/>
             </g>
             <g fill="#ffffff" text-anchor="middle" dominant-baseline="central">
               <text x="120" y="397">移動</text>
               <text x="1240" y="129">やり直し</text>
+              <text x="120" y="129">タイトルへ</text>
               <text x="1120" y="370">反転</text>
               <text x="1100" y="480">ジャンプ</text>
             </g>
@@ -318,6 +322,7 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
         <li><div class="ic">▲</div><div><b>ジャンプ（右下）</b><span>軽くタップしても一番高く跳びます。</span></div></li>
         <li><div class="ic">⇅</div><div><b>重力反転（右の真ん中）</b><span>重力の向きが上下入れかわります。</span></div></li>
         <li><div class="ic">↻</div><div><b>やり直し（右上）</b><span>ステージ1の最初から全部やり直します。タイムとりんごも0に戻ります。</span></div></li>
+        <li><div class="ic">⌂</div><div><b>タイトルへ（左上）</b><span>「タイトルにもどりますか？」と聞かれます。「はい」でタイトルに戻ります。聞かれている間はゲームとタイムが止まります。遊んでいた記録は残りません。</span></div></li>
       </ul>
       <p class="note">左手の親指で移動、右手の親指でジャンプと反転を押すと遊びやすいです。ボタンは絵より少し広い範囲まで反応します。</p>
     </div>
@@ -332,6 +337,7 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
           <tr><td><kbd>Z</kbd> か <kbd>スペース</kbd></td><td>ジャンプ（長く押すほど高く跳ぶ）</td></tr>
           <tr><td><kbd>X</kbd> か <kbd>↑</kbd></td><td>重力反転</td></tr>
           <tr><td><kbd>R</kbd></td><td>最初から全部やり直す</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>タイトルへ戻る（はい・いいえを聞かれます）</td></tr>
           <tr><td><kbd>C</kbd></td><td>タイトル画面でランキングを見る</td></tr>
           <tr><td><kbd>Enter</kbd></td><td>タイトル・クリア画面で次へ</td></tr>
         </tbody>

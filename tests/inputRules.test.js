@@ -77,3 +77,11 @@ test('hitButton: 反応範囲が重なった所では一番近いボタン', () 
   assertEqual(hitButton(TOUCH_BUTTONS, 1200, 380), 'flip'); // 反転から 50、ジャンプから 60
   assertEqual(hitButton(TOUCH_BUTTONS, 1200, 390), 'jump'); // 反転から 60、ジャンプから 50
 });
+
+// タイトルへ戻るボタンは左の列の上(やり直しの反対側)。移動ボタンからは離す
+test('hitButton: タイトルへのボタン', () => {
+  assertEqual(hitButton(TOUCH_BUTTONS, 80, 30), 'home');
+  assertEqual(hitButton(TOUCH_BUTTONS, 80 + 34, 30), 'home');
+  assertEqual(hitButton(TOUCH_BUTTONS, 80, 30 + 35), null);
+  assertEqual(hitButton(TOUCH_BUTTONS, 42, 400), 'left');
+});

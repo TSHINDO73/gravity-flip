@@ -176,6 +176,10 @@ export class GameScene extends Phaser.Scene {
     const ui = this.scene.get('UIScene');
     const touchPad = { update: () => (ui.touchPad ? ui.touchPad.update() : new Set()) };
     this.controls = new Controls(this, touch ? touchPad : null);
+    // 「いいえ」で戻ったとき、確認中に押したキーでジャンプなどが起きないようにする
+    const onResume = () => this.input.keyboard.resetKeys();
+    this.events.on(Phaser.Scenes.Events.RESUME, onResume);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.events.off(Phaser.Scenes.Events.RESUME, onResume));
 
     // カメラはプレイ画面(960x480)だけを映す。HUD とボタンはその外側
     const cam = this.cameras.main;
@@ -292,6 +296,12 @@ export class GameScene extends Phaser.Scene {
     // ゴール後の画面切り替え待ちの間はやり直しを受け付けない(クリアが消えるため)
     if (!this.reachedGoal && input.restartPressed) {
       this.restartRun();
+      return;
+    }
+    // タイトルへ: 止めてから UIScene に「はい・いいえ」を出してもらう(止めている間はタイムも進まない)
+    if (!this.reachedGoal && input.homePressed) {
+      this.scene.pause();
+      this.game.events.emit('ask-title');
       return;
     }
     const levelH = this.level.height * TILE;

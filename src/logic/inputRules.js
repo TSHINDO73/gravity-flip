@@ -6,6 +6,7 @@ export const TOUCH_BUTTONS = [
   { id: 'flip', x: 1200, y: 330, r: 40, hit: 56 },
   { id: 'jump', x: 1200, y: 440, r: 46, hit: 70 },
   { id: 'restart', x: 1200, y: 30, r: 26, hit: 34 },
+  { id: 'home', x: 80, y: 30, r: 26, hit: 34 },
 ];
 
 // 反応範囲が重なった所では、指に一番近いボタンを選ぶ
