@@ -1,3 +1,6 @@
 .superpowers/
 *.log
 
+server/.wrangler/
+server/.dev.vars
+server/node_modules/

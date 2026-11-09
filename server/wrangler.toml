@@ -1,0 +1,9 @@
+# ランキングの受付(Cloudflare Workers + D1)。アカウントの ID はここに書かない(wrangler login の状態から使う)
+name = "gravity-flip-scores"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "gravity-flip-scores"
+database_id = "local-placeholder"
