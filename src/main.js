@@ -5,6 +5,7 @@ import { TitleScene } from './scenes/TitleScene.js';
 import { GameScene } from './scenes/GameScene.js';
 import { ClearScene } from './scenes/ClearScene.js';
 import { UIScene } from './scenes/UIScene.js';
+import { RankingScene } from './scenes/RankingScene.js';
 
 const params = new URLSearchParams(window.location.search);
 
@@ -31,7 +32,7 @@ const game = new Phaser.Game({
       debug: params.get('debug') === '1',
     },
   },
-  scene: [BootScene, TitleScene, GameScene, ClearScene, UIScene],
+  scene: [BootScene, TitleScene, GameScene, ClearScene, RankingScene, UIScene],
 });
 
 // 開発用: ?debug=1 のときだけ、ブラウザのコンソールや自動確認からゲームを触れるようにする
