@@ -1,5 +1,7 @@
 import { formatTime } from '../logic/format.js';
-import { loadBest, saveBest, mergeBest, scorePoints } from '../logic/records.js';
+import { scorePoints } from '../logic/records.js';
+import { mergeTop } from '../logic/ranking.js';
+import { loadTop3, saveTop3 } from '../logic/localRanking.js';
 import { isTouchDevice } from '../objects/TouchPad.js';
 import { Background, STAGE_SKIES } from '../objects/Background.js';
 import { pixelText, jpText, panel, clockIcon, groundStrip } from '../ui/pixelText.js';
@@ -23,7 +25,7 @@ export class ClearScene extends Phaser.Scene {
     pixelText(this, cx, 88, 'CLEAR!', 7, { shadow: true, originX: 0.5 });
 
     // 1 行目: リンゴの数、2 行目: タイム、3 行目: 点数
-    const run = { timeMs: elapsedMs, coins };
+    const run = { timeMs: elapsedMs, coins, at: new Date().toISOString() };
     this.add.image(cx - 180, 192, 'apple', 0).setScale(2);
     pixelText(this, cx - 140, 172, `X${coins}`, 4);
     clockIcon(this, cx - 180, 248, 18);
@@ -32,11 +34,12 @@ export class ClearScene extends Phaser.Scene {
     pixelText(this, cx - 232, 310, 'SCORE', 2);
     pixelText(this, cx - 140, 296, String(scorePoints(run)), 4);
 
-    // 通しプレイだけ記録を比べる。点数が良ければ NEW!、そうでなければ前回までのベストの組
+    // 通しプレイだけ自分の上位3件と比べる。1 位なら NEW!、そうでなければ今までのベストの組
     if (fullRun) {
-      const { best, isNew } = mergeBest(loadBest(), run);
-      saveBest(best);
-      if (isNew) {
+      const { list, rank } = mergeTop(loadTop3(), run, 3);
+      saveTop3(list);
+      const best = list[0];
+      if (rank === 1) {
         this.add.rectangle(cx + 100, 296, 130, 42, NEW_PINK).setOrigin(0).setStrokeStyle(3, 0xffffff);
         pixelText(this, cx + 165, 302, 'NEW!', 3, { originX: 0.5 });
       } else {

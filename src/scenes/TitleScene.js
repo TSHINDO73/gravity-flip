@@ -1,5 +1,6 @@
 import { formatTime } from '../logic/format.js';
-import { loadBest, scorePoints } from '../logic/records.js';
+import { scorePoints } from '../logic/records.js';
+import { loadTop3 } from '../logic/localRanking.js';
 import { freshRun } from '../logic/runRules.js';
 import { isTouchDevice } from '../objects/TouchPad.js';
 import { Background, STAGE_SKIES } from '../objects/Background.js';
@@ -24,7 +25,7 @@ export class TitleScene extends Phaser.Scene {
     pixelText(this, cx, 150, 'FLIP', 8, { shadow: true, originX: 0.5 });
 
     // ベスト記録: 点数を大きく、その回のタイムとりんごの数を小さく並べる。記録がなければ出さない
-    const best = loadBest();
+    const [best] = loadTop3();
     if (best) {
       panel(this, cx - 250, 262, 500, 46);
       pixelText(this, cx - 232, 271, `BEST ${scorePoints(best)}`);
