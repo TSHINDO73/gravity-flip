@@ -12,10 +12,11 @@
 | Z / スペース | ジャンプ |
 | X / ↑ | 重力反転 |
 | R | やり直し（1-1 の最初から。タイムとりんごも 0 に戻る） |
+| C | タイトル画面でランキングを見る |
 
 スマホ（横持ち専用）では、画面の左の列の ← →、右の列の 反転・ジャンプ・↻（やり直し）で遊べます。ジャンプは軽くタップしても最大の高さで跳びます。タイトルとクリア画面はタップで進みます。
 
-クリアすると SCORE（30000 − タイムの秒数 × 100 ＋ りんごの数 × 50、多いほど良い。0 点より下にはならない）が出ます。ベスト記録は SCORE が一番良かった回のタイムとりんごの組で、ブラウザに保存されます。
+クリアすると SCORE（30000 − タイムの秒数 × 100 ＋ りんごの数 × 50、多いほど良い。0 点より下にはならない）が出ます。自分の上位3件はブラウザに保存されます。通しプレイをクリアすると名前（6 文字まで）を入れて、みんなのベスト10（下の「ランキングの受付」）に送れます。
 
 ## 起動方法
 
@@ -33,6 +34,44 @@ http://localhost:8123/ を開いてください。
 
 - `?stage=N` ... Nステージ(1〜3)から開始
 - `?debug=1` ... 当たり判定の表示。ブラウザのコンソールから `window.game` でゲームを触れます
+
+## ランキングの受付
+
+みんなのベスト10は Cloudflare Workers（`server/`）と D1 に保存します。公開中のゲーム（tshindo73.github.io）は本番の受付（`src/config.js` の `RANKING_API_PROD`）を、それ以外（localhost・LAN）は同じホストの 8787 番を使います。
+
+手元で動かす（初回だけ `npm install` と表の作成）:
+
+```
+cd server
+npm install
+npm run db:local
+echo IP_SALT=local-dev-salt > .dev.vars
+npm run dev
+```
+
+動作の確認（手元の記録は消えます）:
+
+```
+node tools/check-server.mjs http://localhost:8787
+```
+
+本番に置く（初回だけ。`wrangler login` でブラウザから Cloudflare に許可を出す）:
+
+```
+cd server
+npx wrangler login
+npx wrangler d1 create gravity-flip-scores        # 出た database_id を wrangler.toml に書く
+npx wrangler d1 execute gravity-flip-scores --remote --file=schema.sql
+npx wrangler secret put IP_SALT                    # ランダムな長い文字列を入れる（どこにも保存しない）
+npx wrangler deploy                                # 出た URL を src/config.js の RANKING_API_PROD に書く
+```
+
+困った名前の消し方: Cloudflare の管理画面 → Storage & databases → D1 → `gravity-flip-scores` → Console で
+
+```
+SELECT id, name, score, created_at FROM scores ORDER BY id DESC LIMIT 20;
+DELETE FROM scores WHERE id = 消したい番号;
+```
 
 ## テスト
 

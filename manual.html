@@ -256,6 +256,7 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
       <li><a href="#things">登場するもの</a></li>
       <li><a href="#miss">ミスしたら</a></li>
       <li><a href="#clear">クリアと記録</a></li>
+      <li><a href="#ranking">ランキング</a></li>
       <li><a href="#tips">コツ</a></li>
     </ul>
   </nav>
@@ -331,6 +332,7 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
           <tr><td><kbd>Z</kbd> か <kbd>スペース</kbd></td><td>ジャンプ（長く押すほど高く跳ぶ）</td></tr>
           <tr><td><kbd>X</kbd> か <kbd>↑</kbd></td><td>重力反転</td></tr>
           <tr><td><kbd>R</kbd></td><td>最初から全部やり直す</td></tr>
+          <tr><td><kbd>C</kbd></td><td>タイトル画面でランキングを見る</td></tr>
           <tr><td><kbd>Enter</kbd></td><td>タイトル・クリア画面で次へ</td></tr>
         </tbody>
       </table>
@@ -439,9 +441,25 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
       <li><span>ステージ1から3まで、順番にトロフィーを目指します。</span></li>
       <li><span>3つ目のトロフィーに触ると<b>CLEAR!</b>。りんごの数、合計タイム、<b>SCORE</b>（点数）が出ます。</span></li>
       <li><span><b>SCORE ＝ 30000 − タイムの秒数 × 100 ＋ りんごの数 × 50</b>。多いほど良い記録です。たとえば 1:20.0 でりんご15個なら SCORE は 22750 点です。</span></li>
-      <li><span>SCORE が今までで一番良ければ <strong>NEW!</strong> と出て、その回のタイムとりんごの数と一緒にタイトル画面の <b>BEST</b> に残ります。</span></li>
+      <li><span>SCORE が自分の記録の3位までに入ると <strong>NEW!</strong>（1位）、<b>2ND</b>、<b>3RD</b> と出ます。1位の記録はタイトル画面の <b>BEST</b> に残ります。</span></li>
     </ol>
-    <p class="note">記録は遊んでいるブラウザの中だけに保存されます。ほかの人の記録とは混ざりません。</p>
+  </section>
+
+  <section id="ranking">
+    <h2>ランキング</h2>
+    <div class="card">
+      <p>タイトル画面の <b>RANKING</b>（パソコンは <kbd>C</kbd> キー）で、2つのランキングを切り替えて見られます。</p>
+      <ul class="tips">
+        <li><b>じぶん TOP3</b>：あなたの記録の上位3件です。遊んでいるブラウザの中だけに保存されます。</li>
+        <li><b>みんな TOP10</b>：遊んだ人全員の記録から、SCORE が高い10件です。同じ人の記録が何件並ぶこともあります。</li>
+      </ul>
+    </div>
+    <ol class="steps">
+      <li><span>はじめてクリアしたときに<b>なまえ</b>を聞かれます。ひらがな・カタカナ・漢字・英数字で<b>6文字まで</b>です。</span></li>
+      <li><span>「OK」で記録がみんなのランキングに送られ、「みんなの中で 4 位！」のように順位が出ます。「おくらない」を選ぶと送りません。</span></li>
+      <li><span>2回目からは同じなまえで送られます。なまえはタイトル画面の「（かえる）」で変えられます。</span></li>
+    </ol>
+    <p class="note"><strong>なまえはほかの人にも見えます。</strong>本名や連絡先は入れないでください。インターネットにつながっていないときは「つうしんできません」と出ますが、ゲームはそのまま遊べます。</p>
   </section>
 
   <section id="tips">
