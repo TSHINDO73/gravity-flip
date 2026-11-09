@@ -11,3 +11,9 @@ test('page: ゲームの親は画面に固定した専用の箱', async () => {
   const rule = css.match(new RegExp(String.raw`#${GAME_PARENT}\s*\{([^}]*)\}`));
   assertTrue(rule && /position:\s*fixed/.test(rule[1]) && /inset:\s*0/.test(rule[1]), '画面に固定されていない');
 });
+
+// 全画面にするのはゲームの箱ごと。canvas だけを全画面にすると、上に重ねる名前入力が見えなくなる
+test('page: 全画面にする要素はゲームの箱', async () => {
+  const main = await (await fetch('../src/main.js', { cache: 'no-store' })).text();
+  assertTrue(/fullscreenTarget:\s*GAME_PARENT/.test(main), 'fullscreenTarget がゲームの箱になっていない');
+});

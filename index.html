@@ -13,6 +13,27 @@
   @font-face { font-family: 'DotGothic16'; src: url('assets/fonts/dotgothic16-subset.woff') format('woff'); }
   /* ゲームの箱。画面に固定するので、Safari のタブやアドレスバーが出ていても見えている範囲に収まる */
   #game { position: fixed; inset: 0; }
+  /* 名前の入力欄(src/ui/nameInput.js)。スマホでキーボードが出ても見えるよう上に寄せる */
+  .name-dialog {
+    position: fixed; inset: 0; z-index: 20; display: flex; align-items: flex-start; justify-content: center;
+    padding: 12px; background: rgba(10, 10, 30, 0.55); touch-action: manipulation;
+  }
+  .name-box {
+    display: flex; flex-direction: column; gap: 6px; width: min(92vw, 380px); padding: 12px 16px;
+    background: #181830; color: #fff; border: 3px solid #fff; box-shadow: 0 0 0 3px #1a1a2e;
+    font-family: 'DotGothic16', sans-serif; user-select: text; -webkit-user-select: text;
+  }
+  .name-box p { margin: 0; }
+  .name-title { font-size: 18px; }
+  /* iOS は 16px 未満の入力欄にフォーカスすると画面を拡大するので 20px にする */
+  .name-field { font: 20px sans-serif; padding: 6px 8px; border: 2px solid #fff; background: #fff; color: #181830; }
+  .name-note { font-size: 13px; color: #b4b4d2; }
+  .name-error { font-size: 13px; color: #ff8aa8; }
+  .name-buttons { display: flex; gap: 10px; justify-content: flex-end; }
+  .name-buttons button { font: 18px 'DotGothic16', sans-serif; padding: 6px 16px; border: 2px solid #fff; color: #fff; cursor: pointer; }
+  .name-ok { background: #ff5078; }
+  .name-cancel { background: #181830; }
+  .name-buttons button:focus-visible, .name-field:focus-visible { outline: 3px solid #ffd84a; outline-offset: 2px; }
   #rotate { display: none; }
   @media (orientation: portrait) and (pointer: coarse) {
     #rotate {

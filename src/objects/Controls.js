@@ -14,6 +14,7 @@ export class Controls {
       flipX: kb.addKey(K.X),
       flipUp: kb.addKey(K.UP),
       restart: kb.addKey(K.R),
+      home: kb.addKey(K.ESC),
     };
     this.touchPad = touchPad;
     // null の間は最初のフレーム。押しっぱなしの指を「押した瞬間」と数えない
@@ -38,6 +39,7 @@ export class Controls {
       jumpReleased: jumpReleased(this.prevKeyJumpDown, keyJumpDown),
       flipPressed: justDown(keys.flipX) || justDown(keys.flipUp) || pressed.has('flip'),
       restartPressed: justDown(keys.restart) || pressed.has('restart'),
+      homePressed: justDown(keys.home) || pressed.has('home'),
     };
     this.prevKeyJumpDown = keyJumpDown;
     return state;

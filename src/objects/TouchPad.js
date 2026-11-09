@@ -25,6 +25,11 @@ const ICONS = {
     g.strokePath();
     g.fillTriangle(x + 4, y - 15, x + 15, y - 6, x + 3, y - 3);
   },
+  // タイトルへ: 家の形(屋根と壁)
+  home: (g, x, y) => {
+    g.fillTriangle(x - 14, y - 1, x + 14, y - 1, x, y - 14);
+    g.fillRect(x - 9, y - 1, 18, 13);
+  },
 };
 
 export function isTouchDevice() {

@@ -5,6 +5,7 @@ import { TitleScene } from './scenes/TitleScene.js';
 import { GameScene } from './scenes/GameScene.js';
 import { ClearScene } from './scenes/ClearScene.js';
 import { UIScene } from './scenes/UIScene.js';
+import { RankingScene } from './scenes/RankingScene.js';
 
 const params = new URLSearchParams(window.location.search);
 
@@ -19,6 +20,8 @@ const game = new Phaser.Game({
   backgroundColor: '#181830',
   scale: {
     parent: GAME_PARENT,
+    // 全画面はゲームの箱ごとにする(canvas だけだと、上に重ねる名前入力が見えなくなる)
+    fullscreenTarget: GAME_PARENT,
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
@@ -31,7 +34,7 @@ const game = new Phaser.Game({
       debug: params.get('debug') === '1',
     },
   },
-  scene: [BootScene, TitleScene, GameScene, ClearScene, UIScene],
+  scene: [BootScene, TitleScene, GameScene, ClearScene, RankingScene, UIScene],
 });
 
 // 開発用: ?debug=1 のときだけ、ブラウザのコンソールや自動確認からゲームを触れるようにする

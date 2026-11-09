@@ -1,0 +1,12 @@
+{
+  "name": "gravity-flip-scores",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "db:local": "wrangler d1 execute gravity-flip-scores --local --file=schema.sql",
+    "dev": "wrangler dev --ip 0.0.0.0 --port 8787"
+  },
+  "devDependencies": {
+    "wrangler": "4.158.0"
+  }
+}

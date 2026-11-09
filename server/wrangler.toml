@@ -1,0 +1,13 @@
+# ランキングの受付(Cloudflare Workers + D1)。アカウントの ID はここに書かない(wrangler login の状態から使う)
+name = "gravity-flip-scores"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+# 送り元や送られた内容を Cloudflare 側のログにも残さない
+[observability]
+enabled = false
+
+[[d1_databases]]
+binding = "DB"
+database_name = "gravity-flip-scores"
+database_id = "a733f2ad-20fb-4e92-972f-3e37088b6cd4"
