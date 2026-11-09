@@ -37,6 +37,8 @@ export class UIScene extends Phaser.Scene {
     this.timeText = pixelText(this, x0 + 792, 16, '0:00.0');
 
     this.touchPad = touch ? new TouchPad(this) : null;
+    // パソコンは画面のボタンの列がないので、HUD の空いている所に「タイトルへ」を置く(スマホは左の列の家のボタン)
+    if (!touch) this.makeHomeButton(x0);
 
     const onHud = (hud) => this.setHud(hud);
     const onAskTitle = () => this.askTitle(x0);
@@ -45,6 +47,17 @@ export class UIScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.game.events.off('hud-update', onHud);
       this.game.events.off('ask-title', onAskTitle);
+    });
+  }
+
+  makeHomeButton(x0) {
+    const bg = this.add.rectangle(x0 + 206, 10, 134, 40, NAVY).setOrigin(0).setStrokeStyle(3, 0xffffff);
+    const icon = this.add.graphics().fillStyle(0xffffff, 1);
+    icon.fillTriangle(x0 + 218, 31, x0 + 238, 31, x0 + 228, 20);
+    icon.fillRect(x0 + 221, 31, 14, 10);
+    pixelText(this, x0 + 246, 20, 'TITLE', 2);
+    bg.setInteractive({ useHandCursor: true }).on('pointerup', () => {
+      if (!this.confirm) this.game.events.emit('home-pressed');
     });
   }
 

@@ -30,6 +30,7 @@ export class GameScene extends Phaser.Scene {
     this.elapsedMs = elapsedMs;
     this.isDead = false;
     this.reachedGoal = false;
+    this.homeRequested = false;
   }
 
   tileCenter(cell) {
@@ -177,6 +178,10 @@ export class GameScene extends Phaser.Scene {
     const touchPad = { update: () => (ui.touchPad ? ui.touchPad.update() : new Set()) };
     this.controls = new Controls(this, touch ? touchPad : null);
     // 「いいえ」で戻ったとき、確認中に押したキーでジャンプなどが起きないようにする
+    // パソコンの HUD の「TITLE」ボタン(UIScene)が押されたら、次のフレームでキーの Esc と同じように扱う
+    const onHome = () => { this.homeRequested = true; };
+    this.game.events.on('home-pressed', onHome);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.game.events.off('home-pressed', onHome));
     const onResume = () => this.input.keyboard.resetKeys();
     this.events.on(Phaser.Scenes.Events.RESUME, onResume);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.events.off(Phaser.Scenes.Events.RESUME, onResume));
@@ -299,7 +304,9 @@ export class GameScene extends Phaser.Scene {
       return;
     }
     // タイトルへ: 止めてから UIScene に「はい・いいえ」を出してもらう(止めている間はタイムも進まない)
-    if (!this.reachedGoal && input.homePressed) {
+    const home = input.homePressed || this.homeRequested;
+    this.homeRequested = false;
+    if (!this.reachedGoal && home) {
       this.scene.pause();
       this.game.events.emit('ask-title');
       return;
