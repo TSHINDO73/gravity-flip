@@ -4,7 +4,7 @@
 export const GAME_PARENT = 'game';
 
 // ランキングの受付(Cloudflare Workers)の本番 URL。公開中のゲームだけが使う(手元では wrangler dev)
-export const RANKING_API_PROD = '';
+export const RANKING_API_PROD = 'https://gravity-flip-scores.tshindo73.workers.dev';
 
 export const HUD_H = 60;
 export const PLAY_W = 960;

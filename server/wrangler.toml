@@ -10,4 +10,4 @@ enabled = false
 [[d1_databases]]
 binding = "DB"
 database_name = "gravity-flip-scores"
-database_id = "local-placeholder"
+database_id = "a733f2ad-20fb-4e92-972f-3e37088b6cd4"
